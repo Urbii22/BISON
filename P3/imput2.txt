@@ -1,0 +1,17 @@
+program Ej2
+    ! Ejemplo if...elseif
+    if (a)
+    then
+        a = 10 * 10
+    elseif (b)
+    then
+        b = 5
+    else
+        c = 15
+    endif
+
+    ! Ejemplo de bucle con paso
+    do a = 1 , 10 , 2
+        print *, a * 5
+    end do
+end program Ej2

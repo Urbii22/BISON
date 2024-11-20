@@ -1,0 +1,5 @@
+program Prueba
+  do x = 1 , 10
+       print *, 99
+    end do
+end program Prueba

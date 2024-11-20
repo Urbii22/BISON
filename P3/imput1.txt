@@ -1,0 +1,10 @@
+! Inicio programa
+program Ej1
+    i=i**2          ! Eleva al cuadrado la variable i
+    if (a-10)       ! Evalúa la expresión
+    then print *, x
+    else print *, y
+    endif           ! Fin del condicional
+    i=(0-1+2)* a - (i)
+! Fin del programa
+end program Ej1
