@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_ANALDESC_TAB_H_INCLUDED
-# define YY_YY_ANALDESC_TAB_H_INCLUDED
+#ifndef YY_YY_BISON_TAB_H_INCLUDED
+# define YY_YY_BISON_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -54,26 +54,26 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    ID = 258,                      /* ID  */
-    NUM = 259,                     /* NUM  */
-    PROGRAM = 260,                 /* PROGRAM  */
-    ENDIF = 261,                   /* ENDIF  */
-    END = 262,                     /* END  */
-    DO = 263,                      /* DO  */
-    IF = 264,                      /* IF  */
-    THEN = 265,                    /* THEN  */
-    ELSE = 266,                    /* ELSE  */
-    ELSEIF = 267,                  /* ELSEIF  */
-    PRINT = 268,                   /* PRINT  */
-    ASSIGN = 269,                  /* ASSIGN  */
-    COMMA = 270,                   /* COMMA  */
-    LPAREN = 271,                  /* LPAREN  */
-    RPAREN = 272,                  /* RPAREN  */
-    PLUS = 273,                    /* PLUS  */
-    MINUS = 274,                   /* MINUS  */
-    MULT = 275,                    /* MULT  */
-    DIV = 276,                     /* DIV  */
-    POW = 277                      /* POW  */
+    PROGRAM = 258,                 /* PROGRAM  */
+    ENDIF = 259,                   /* ENDIF  */
+    END = 260,                     /* END  */
+    DO = 261,                      /* DO  */
+    IF = 262,                      /* IF  */
+    THEN = 263,                    /* THEN  */
+    ELSE = 264,                    /* ELSE  */
+    ELSEIF = 265,                  /* ELSEIF  */
+    PRINT = 266,                   /* PRINT  */
+    ASSIGN = 267,                  /* ASSIGN  */
+    COMMA = 268,                   /* COMMA  */
+    LPAREN = 269,                  /* LPAREN  */
+    RPAREN = 270,                  /* RPAREN  */
+    PLUS = 271,                    /* PLUS  */
+    MINUS = 272,                   /* MINUS  */
+    MULT = 273,                    /* MULT  */
+    DIV = 274,                     /* DIV  */
+    POW = 275,                     /* POW  */
+    NUM = 276,                     /* NUM  */
+    ID = 277                       /* ID  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,13 +82,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 39 "analdesc.y"
+#line 34 "bison.y"
 
-    int intVal;
-    char* strVal;
-    void* voidVal; // Para no terminales que no retornan valor
+    int num;
+    char *id;
+    char *code;
 
-#line 92 "analdesc.tab.h"
+#line 92 "bison.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -103,4 +103,4 @@ extern YYSTYPE yylval;
 int yyparse (void);
 
 
-#endif /* !YY_YY_ANALDESC_TAB_H_INCLUDED  */
+#endif /* !YY_YY_BISON_TAB_H_INCLUDED  */

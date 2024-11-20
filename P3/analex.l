@@ -1,5 +1,5 @@
 %{
-#include "parser.tab.h"
+#include "analdesc.tab.h"
 #include <string.h>
 %}
 
@@ -18,29 +18,29 @@
 <COM>"!>"                 { BEGIN(INITIAL); }
 <COM>(.|\n)+              { /* Consumir todo dentro del comentario */ }
 
-"program"                 { return PROGRAM; }
-"endif"                   { return ENDIF; }
-"end"                     { return END; }
-"do"                      { return DO; }
-"if"                      { return IF; }
-"then"                    { return THEN; }
-"else"                    { return ELSE; }
-"elseif"                  { return ELSEIF; }
-"print"                   { return PRINT; }
+"program"                  { return PROGRAM; }
+"endif"                    { return ENDIF; }
+"end"                      { return END; }
+"do"                       { return DO; }
+"if"                       { return IF; }
+"then"                     { return THEN; }
+"else"                     { return ELSE; }
+"elseif"                   { return ELSEIF; }
+"print"                    { return PRINT; }
 
-"="                       { return ASSIGN; }
-","                       { return COMMA; }
-"("                       { return LPAREN; }
-")"                       { return RPAREN; }
-"+"                       { return PLUS; }
-"-"                       { return MINUS; }
-"**"                      { return POW; }
-"*"                       { return MULT; }
-"/"                       { return DIV; }
+"="                        { return ASSIGN; }
+","                        { return COMMA; }
+"("                        { return LPAREN; }
+")"                        { return RPAREN; }
+"+"                        { return PLUS; }
+"-"                        { return MINUS; }
+"**"                       { return POW; }
+"*"                        { return MULT; }
+"/"                        { return DIV; }
 
-[0-9]+                    { yylval.intVal = atoi(yytext); return NUM; }
+[0-9]+                     { yylval.intVal = atoi(yytext); return NUM; }
 [a-zA-Z][a-zA-Z0-9_]{0,30} { yylval.strVal = strdup(yytext); return ID; }
 
-.                         { printf("Caracter inválido: %s\n", yytext); exit(1); }
+.                          { printf("Caracter inválido: %s\n", yytext); exit(1); }
 
 %%

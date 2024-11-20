@@ -67,45 +67,40 @@
 
 
 /* First part of user prologue.  */
-#line 1 "analdesc.y"
+#line 1 "bison.y"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Declaraciones para Flex
-extern int yylex();
-extern int yyparse();
+/* Declaración de yyin */
 extern FILE *yyin;
 
-// Contador para etiquetas únicas
-int labelCount = 0;
+/* Declaración de yylex */
+int yylex(void);
+void yyerror(const char *s);
 
-// Función para generar nuevas etiquetas
+/* Generador de etiquetas */
+int labelCount = 0;
 char* newLabel() {
-    char* label = malloc(20);
+    char *label = malloc(10);
     if (!label) {
-        fprintf(stderr, "Error de memoria al generar etiquetas.\n");
+        fprintf(stderr, "Error de memoria al generar una nueva etiqueta.\n");
         exit(1);
     }
     sprintf(label, "LBL%d", labelCount++);
     return label;
 }
 
-// Variables para almacenar identificadores del programa
-char* prog_id1;
-char* prog_id2;
+/* Variables globales para etiquetas en bucles y condicionales */
+char *current_labelStart;
+char *current_labelEnd;
 
-// Variables para almacenar etiquetas actuales
-char currentElseLabel[20];
-char currentEndLabel[20];
-char* currentLabelStart;
-char* currentLabelEnd;
+/* Variables para manejar datos del bucle */
+char *do_ID;
+int do_step;
 
-// Prototipos de funciones
-void yyerror(const char *s);
-
-#line 109 "analdesc.tab.c"
+#line 104 "bison.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -128,7 +123,7 @@ void yyerror(const char *s);
 #  endif
 # endif
 
-#include "analdesc.tab.h"
+#include "bison.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -136,36 +131,36 @@ enum yysymbol_kind_t
   YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
   YYSYMBOL_YYerror = 1,                    /* error  */
   YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
-  YYSYMBOL_ID = 3,                         /* ID  */
-  YYSYMBOL_NUM = 4,                        /* NUM  */
-  YYSYMBOL_PROGRAM = 5,                    /* PROGRAM  */
-  YYSYMBOL_ENDIF = 6,                      /* ENDIF  */
-  YYSYMBOL_END = 7,                        /* END  */
-  YYSYMBOL_DO = 8,                         /* DO  */
-  YYSYMBOL_IF = 9,                         /* IF  */
-  YYSYMBOL_THEN = 10,                      /* THEN  */
-  YYSYMBOL_ELSE = 11,                      /* ELSE  */
-  YYSYMBOL_ELSEIF = 12,                    /* ELSEIF  */
-  YYSYMBOL_PRINT = 13,                     /* PRINT  */
-  YYSYMBOL_ASSIGN = 14,                    /* ASSIGN  */
-  YYSYMBOL_COMMA = 15,                     /* COMMA  */
-  YYSYMBOL_LPAREN = 16,                    /* LPAREN  */
-  YYSYMBOL_RPAREN = 17,                    /* RPAREN  */
-  YYSYMBOL_PLUS = 18,                      /* PLUS  */
-  YYSYMBOL_MINUS = 19,                     /* MINUS  */
-  YYSYMBOL_MULT = 20,                      /* MULT  */
-  YYSYMBOL_DIV = 21,                       /* DIV  */
-  YYSYMBOL_POW = 22,                       /* POW  */
+  YYSYMBOL_PROGRAM = 3,                    /* PROGRAM  */
+  YYSYMBOL_ENDIF = 4,                      /* ENDIF  */
+  YYSYMBOL_END = 5,                        /* END  */
+  YYSYMBOL_DO = 6,                         /* DO  */
+  YYSYMBOL_IF = 7,                         /* IF  */
+  YYSYMBOL_THEN = 8,                       /* THEN  */
+  YYSYMBOL_ELSE = 9,                       /* ELSE  */
+  YYSYMBOL_ELSEIF = 10,                    /* ELSEIF  */
+  YYSYMBOL_PRINT = 11,                     /* PRINT  */
+  YYSYMBOL_ASSIGN = 12,                    /* ASSIGN  */
+  YYSYMBOL_COMMA = 13,                     /* COMMA  */
+  YYSYMBOL_LPAREN = 14,                    /* LPAREN  */
+  YYSYMBOL_RPAREN = 15,                    /* RPAREN  */
+  YYSYMBOL_PLUS = 16,                      /* PLUS  */
+  YYSYMBOL_MINUS = 17,                     /* MINUS  */
+  YYSYMBOL_MULT = 18,                      /* MULT  */
+  YYSYMBOL_DIV = 19,                       /* DIV  */
+  YYSYMBOL_POW = 20,                       /* POW  */
+  YYSYMBOL_NUM = 21,                       /* NUM  */
+  YYSYMBOL_ID = 22,                        /* ID  */
   YYSYMBOL_YYACCEPT = 23,                  /* $accept  */
   YYSYMBOL_program = 24,                   /* program  */
   YYSYMBOL_stmts = 25,                     /* stmts  */
   YYSYMBOL_stmt = 26,                      /* stmt  */
-  YYSYMBOL_27_1 = 27,                      /* $@1  */
-  YYSYMBOL_28_2 = 28,                      /* $@2  */
-  YYSYMBOL_29_3 = 29,                      /* $@3  */
-  YYSYMBOL_opt_step = 30,                  /* opt_step  */
-  YYSYMBOL_elserep = 31,                   /* elserep  */
-  YYSYMBOL_32_4 = 32,                      /* $@4  */
+  YYSYMBOL_do_stmt = 27,                   /* do_stmt  */
+  YYSYMBOL_optional_step = 28,             /* optional_step  */
+  YYSYMBOL_if_stmt = 29,                   /* if_stmt  */
+  YYSYMBOL_elserep = 30,                   /* elserep  */
+  YYSYMBOL_print_stmt = 31,                /* print_stmt  */
+  YYSYMBOL_assign_stmt = 32,               /* assign_stmt  */
   YYSYMBOL_exp = 33,                       /* exp  */
   YYSYMBOL_term = 34,                      /* term  */
   YYSYMBOL_factor = 35,                    /* factor  */
@@ -497,16 +492,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   78
+#define YYLAST   74
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  23
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  14
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  29
+#define YYNRULES  28
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  71
+#define YYNSTATES  69
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   277
@@ -557,9 +552,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    58,    58,    71,    73,    80,    92,    79,   129,   128,
-     151,   159,   170,   176,   183,   186,   190,   195,   194,   210,
-     212,   219,   228,   230,   237,   246,   248,   263,   270,   277
+       0,    51,    51,    63,    66,    75,    76,    77,    78,    82,
+     132,   135,   142,   167,   173,   179,   202,   211,   221,   229,
+     237,   245,   253,   261,   269,   283,   291,   297,   303
 };
 #endif
 
@@ -575,11 +570,12 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "\"end of file\"", "error", "\"invalid token\"", "ID", "NUM", "PROGRAM",
-  "ENDIF", "END", "DO", "IF", "THEN", "ELSE", "ELSEIF", "PRINT", "ASSIGN",
-  "COMMA", "LPAREN", "RPAREN", "PLUS", "MINUS", "MULT", "DIV", "POW",
-  "$accept", "program", "stmts", "stmt", "$@1", "$@2", "$@3", "opt_step",
-  "elserep", "$@4", "exp", "term", "factor", "base", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "PROGRAM", "ENDIF",
+  "END", "DO", "IF", "THEN", "ELSE", "ELSEIF", "PRINT", "ASSIGN", "COMMA",
+  "LPAREN", "RPAREN", "PLUS", "MINUS", "MULT", "DIV", "POW", "NUM", "ID",
+  "$accept", "program", "stmts", "stmt", "do_stmt", "optional_step",
+  "if_stmt", "elserep", "print_stmt", "assign_stmt", "exp", "term",
+  "factor", "base", YY_NULLPTR
 };
 
 static const char *
@@ -589,7 +585,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-46)
+#define YYPACT_NINF (-40)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -603,14 +599,13 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       0,     4,    17,   -46,   -46,    26,    16,    22,    39,    44,
-      18,   -46,    -1,    60,    52,    -1,    54,   -46,   -46,    -1,
-      29,    41,   -46,    48,   -46,    -1,    34,    -1,    37,    -1,
-      -1,    -1,    -1,    67,    25,    62,    29,   -46,    41,    41,
-     -46,   -46,   -46,    -1,   -46,    31,   -46,    -1,   -46,    13,
-      29,   -46,   -46,    64,   -46,    58,   -46,    28,   -46,     5,
-      -1,    68,   -46,    40,    69,    66,   -46,   -46,   -46,    13,
-     -46
+      -2,   -16,     9,   -40,   -40,    19,     8,    -4,    14,     4,
+      49,   -40,   -40,   -40,   -40,   -40,    16,    50,    15,    18,
+      15,   -40,    15,    15,   -40,   -40,    32,    25,   -40,    45,
+      15,    41,    29,    36,    58,    15,    15,    15,    15,    46,
+      41,    47,   -40,   -40,    25,    25,   -40,   -40,   -40,    56,
+      10,    51,   -40,   -40,   -40,    57,   -40,   -40,    28,     1,
+      15,    64,   -40,    39,   -40,    65,   -40,    10,   -40
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -619,27 +614,26 @@ static const yytype_int8 yypact[] =
 static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     3,     1,     0,     0,     0,     0,     0,
-       0,     4,     0,     0,     0,     0,     0,    28,    27,     0,
-      11,    19,    22,    25,     2,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    10,    29,    20,    21,
-      23,    24,    26,     0,     8,    13,     3,     0,     5,     0,
-      12,     3,    14,     0,     3,     0,     9,     6,    15,     0,
-       0,     0,    16,     0,     0,     0,     7,    17,     3,     0,
-      18
+       0,     4,     5,     6,     7,     8,     0,     0,     0,     0,
+       0,     2,     0,     0,    26,    27,     0,    20,    23,    25,
+       0,    17,     0,     0,     0,     0,     0,     0,     0,     0,
+      16,     0,    28,     3,    18,    19,    21,    22,    24,    10,
+       0,     0,     3,    13,     3,     0,    12,    11,     0,     0,
+       0,     0,    14,     0,     9,     0,     3,     0,    15
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -46,   -46,   -45,   -46,   -46,   -46,   -46,   -46,     9,   -46,
-     -15,    35,    36,   -46
+     -40,   -40,   -39,   -40,   -40,   -40,   -40,     7,   -40,   -40,
+     -20,    24,    26,   -40
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     2,     5,    11,    51,    61,    46,    48,    56,    68,
-      20,    21,    22,    23
+       0,     2,     5,    11,    12,    52,    13,    56,    14,    15,
+      26,    27,    28,    29
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -647,56 +641,55 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      26,    49,    17,    18,    28,     1,    57,     3,     6,    59,
-      34,    62,    36,     8,     9,    19,     6,     4,    10,    52,
-      53,     8,     9,    69,    54,    55,    10,    13,    45,     6,
-      12,     6,    50,     7,     8,     9,     8,     9,    16,    10,
-      43,    10,    14,    29,    30,    63,    47,    29,    30,    29,
-      30,    35,    29,    30,    37,    29,    30,    65,    29,    30,
-      15,    31,    32,    24,    38,    39,    25,    40,    41,    27,
-      33,    42,    44,    58,    60,    64,    67,    66,    70
+      31,     1,    32,    33,    50,    62,     3,     7,     8,     4,
+      40,    16,     9,    58,    53,    59,     7,     8,    17,    54,
+      55,     9,    19,    10,     6,     7,     8,    67,    18,    23,
+       9,    30,    10,    61,     7,     8,    24,    25,    21,     9,
+      63,    10,    41,    37,    38,    35,    36,    34,    35,    36,
+      10,    42,    35,    36,    65,    35,    36,    35,    36,    44,
+      45,    20,    22,    46,    47,    39,    43,    48,    49,    51,
+      64,    60,    57,    66,    68
 };
 
 static const yytype_int8 yycheck[] =
 {
-      15,    46,     3,     4,    19,     5,    51,     3,     3,    54,
-      25,     6,    27,     8,     9,    16,     3,     0,    13,     6,
-       7,     8,     9,    68,    11,    12,    13,     5,    43,     3,
-      14,     3,    47,     7,     8,     9,     8,     9,    20,    13,
-      15,    13,     3,    18,    19,    60,    15,    18,    19,    18,
-      19,    17,    18,    19,    17,    18,    19,    17,    18,    19,
-      16,    20,    21,     3,    29,    30,    14,    31,    32,    15,
-      22,     4,    10,     9,    16,     7,    10,     8,    69
+      20,     3,    22,    23,    43,     4,    22,     6,     7,     0,
+      30,     3,    11,    52,     4,    54,     6,     7,    22,     9,
+      10,    11,    18,    22,     5,     6,     7,    66,    14,    14,
+      11,    13,    22,     5,     6,     7,    21,    22,    22,    11,
+      60,    22,    13,    18,    19,    16,    17,    15,    16,    17,
+      22,    15,    16,    17,    15,    16,    17,    16,    17,    35,
+      36,    12,    12,    37,    38,    20,     8,    21,    21,    13,
+       6,    14,    21,     8,    67
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     5,    24,     3,     0,    25,     3,     7,     8,     9,
-      13,    26,    14,     5,     3,    16,    20,     3,     4,    16,
-      33,    34,    35,    36,     3,    14,    33,    15,    33,    18,
-      19,    20,    21,    22,    33,    17,    33,    17,    34,    34,
-      35,    35,     4,    15,    10,    33,    29,    15,    30,    25,
-      33,    27,     6,     7,    11,    12,    31,    25,     9,    25,
-      16,    28,     6,    33,     7,    17,     8,    10,    32,    25,
-      31
+       0,     3,    24,    22,     0,    25,     5,     6,     7,    11,
+      22,    26,    27,    29,    31,    32,     3,    22,    14,    18,
+      12,    22,    12,    14,    21,    22,    33,    34,    35,    36,
+      13,    33,    33,    33,    15,    16,    17,    18,    19,    20,
+      33,    13,    15,     8,    34,    34,    35,    35,    21,    21,
+      25,    13,    28,     4,     9,    10,    30,    21,    25,    25,
+      14,     5,     4,    33,     6,    15,     8,    25,    30
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    23,    24,    25,    25,    27,    28,    26,    29,    26,
-      26,    26,    30,    30,    31,    31,    31,    32,    31,    33,
-      33,    33,    34,    34,    34,    35,    35,    36,    36,    36
+       0,    23,    24,    25,    25,    26,    26,    26,    26,    27,
+      28,    28,    29,    30,    30,    30,    31,    32,    33,    33,
+      33,    34,    34,    34,    35,    35,    36,    36,    36
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     6,     0,     2,     0,     0,    12,     0,     8,
-       4,     3,     2,     0,     1,     2,     3,     0,     8,     1,
-       3,     3,     1,     3,     3,     1,     3,     1,     1,     3
+       0,     2,     6,     0,     2,     1,     1,     1,     1,    10,
+       0,     2,     7,     1,     3,     7,     4,     3,     3,     3,
+       1,     3,     3,     1,     3,     1,     1,     1,     3
 };
 
 
@@ -1160,277 +1153,307 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: PROGRAM ID stmts END PROGRAM ID  */
-#line 59 "analdesc.y"
+#line 52 "bison.y"
     {
-        prog_id1 = (yyvsp[-4].strVal);
-        prog_id2 = (yyvsp[0].strVal);
-        if (strcasecmp(prog_id1, prog_id2) != 0) {
+        if (strcasecmp((yyvsp[-4].id), (yyvsp[0].id)) != 0) {
             fprintf(stderr, "Error: Los identificadores del programa no coinciden.\n");
             exit(1);
         }
+        (yyval.code) = strdup("");
     }
-#line 1173 "analdesc.tab.c"
+#line 1165 "bison.tab.c"
     break;
 
   case 3: /* stmts: %empty  */
-#line 71 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1179 "analdesc.tab.c"
+#line 63 "bison.y"
+    { 
+        (yyval.code) = strdup(""); 
+    }
+#line 1173 "bison.tab.c"
     break;
 
   case 4: /* stmts: stmts stmt  */
-#line 74 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1185 "analdesc.tab.c"
+#line 67 "bison.y"
+    { 
+        /* Las acciones de los statements ya manejan la impresión */
+        free((yyvsp[-1].code)); 
+        (yyval.code) = strdup(""); 
+    }
+#line 1183 "bison.tab.c"
     break;
 
-  case 5: /* $@1: %empty  */
-#line 80 "analdesc.y"
+  case 9: /* do_stmt: DO ID ASSIGN exp COMMA NUM optional_step stmts END DO  */
+#line 83 "bison.y"
     {
-        // Inicialización de la variable
-        printf("\tvalori %s\n", (yyvsp[-5].strVal)); // ID
-        printf("\t%s\n", (yyvsp[-3].strVal));        // 'mete <exp>'
+        /* Asignar variables */
+        do_ID = (yyvsp[-8].id);
+        int limit = (yyvsp[-4].num);
+        do_step = (yyvsp[-3].num);
+
+        /* Inicialización del bucle */
+        printf("\tvalori %s\n", do_ID);
+        printf("\t%s\n", (yyvsp[-6].code)); // Código de la expresión inicial
         printf("\tasigna\n");
 
-        // Generación de etiquetas
-        currentLabelStart = newLabel();
-        printf("%s:\n", currentLabelStart);
-    }
-#line 1200 "analdesc.tab.c"
-    break;
+        /* Generación de etiquetas */
+        current_labelStart = newLabel();
+        current_labelEnd = newLabel();
 
-  case 6: /* $@2: %empty  */
-#line 92 "analdesc.y"
-    { 
-        // Después de procesar el cuerpo del bucle, generar el código de incremento y condición
+        /* Imprimir etiqueta de inicio del bucle */
+        printf("%s\n", current_labelStart);
 
-        // Obtener el valor actual de la variable
-        printf("\tvalori %s\n", (yyvsp[-7].strVal)); // ID
-        printf("\tvalord %s\n", (yyvsp[-7].strVal)); // ID
+        /* Las sentencias ya han sido procesadas y sus acciones han sido ejecutadas */
 
-        // Paso del bucle
-        if ((yyvsp[-2].strVal) != NULL) {            // opt_step
-            printf("\t%s\n", (yyvsp[-2].strVal));    // Código del paso (ya incluye 'mete')
+        /* Incremento de la variable de control */
+        printf("\tvalori %s\n", do_ID);
+        printf("\tvalord %s\n", do_ID);
+        if (do_step != 0) {
+            printf("\tmete %d\n", do_step);
         } else {
-            printf("\tmete 1\n");     // Paso por defecto
+            printf("\tmete 1\n");
         }
-
-        // Sumar el paso al valor actual
         printf("\tsum\n");
         printf("\tasigna\n");
 
-        // Obtener el nuevo valor de la variable
-        printf("\tvalord %s\n", (yyvsp[-7].strVal)); // ID
-
-        // Comparar con el límite
-        printf("\t%s\n", (yyvsp[-3].strVal));        // 'mete <límite>'
+        /* Comparación con el límite */
+        printf("\tvalord %s\n", do_ID);
+        printf("\tmete %d\n", limit);
         printf("\tsub\n");
 
-        // Salto condicional al inicio del bucle si la condición se cumple
-        printf("\tsiciertovea %s\n", currentLabelStart);
+        /* Salto condicional */
+        printf("\tsiciertovea %s\n", current_labelStart);
+
+        /* Imprimir etiqueta de fin del bucle */
+        printf("%s\n", current_labelEnd);
+
+        /* Asignar a $$ */
+        (yyval.code) = strdup("");
     }
-#line 1233 "analdesc.tab.c"
+#line 1233 "bison.tab.c"
     break;
 
-  case 7: /* stmt: DO ID ASSIGN exp COMMA exp opt_step $@1 stmts $@2 END DO  */
-#line 121 "analdesc.y"
+  case 10: /* optional_step: %empty  */
+#line 132 "bison.y"
     { 
-        // Definir etiqueta de fin del bucle (no utilizada en este caso)
-        printf("%s:\n", newLabel());
-        (yyval.voidVal) = NULL; // Asignar valor para <voidVal>
+        (yyval.num) = 0; 
     }
-#line 1243 "analdesc.tab.c"
+#line 1241 "bison.tab.c"
     break;
 
-  case 8: /* $@3: %empty  */
-#line 129 "analdesc.y"
-    {
-        // Generar etiquetas para else y fin
-        char* elseLabel = newLabel();
-        char* endLabel = newLabel();
-        printf("%s\n", (yyvsp[-2].strVal)); // exp
-        printf("\tsifalsovea %s\n", elseLabel);
-        // Guardar etiquetas en variables globales para usarlas en elserep
-        strcpy(currentElseLabel, elseLabel);
-        strcpy(currentEndLabel, endLabel);
+  case 11: /* optional_step: COMMA NUM  */
+#line 136 "bison.y"
+    { 
+        (yyval.num) = (yyvsp[0].num); 
     }
-#line 1258 "analdesc.tab.c"
+#line 1249 "bison.tab.c"
     break;
 
-  case 9: /* stmt: IF LPAREN exp RPAREN THEN $@3 stmts elserep  */
-#line 141 "analdesc.y"
+  case 12: /* if_stmt: IF LPAREN exp RPAREN THEN stmts elserep  */
+#line 143 "bison.y"
     {
-        // Imprimir salto hacia el final del bloque condicional
-        printf("\tvea %s\n", currentEndLabel);
-        // Definir etiquetas de else y fin
-        printf("%s:\n", currentElseLabel);
-        printf("%s:\n", currentEndLabel);
-        (yyval.voidVal) = NULL; // Asignar valor para <voidVal>
+        /* Generación de etiquetas */
+        current_labelStart = newLabel();
+        current_labelEnd = newLabel();
+        
+        /* Imprimir código de la condición */
+        printf("%s\n", (yyvsp[-4].code)); /* Código de la expresión */
+        printf("\tsifalsovea %s\n", current_labelStart);
+        
+        /* Saltar al fin del condicional */
+        printf("\tvea %s\n", current_labelEnd);
+        
+        /* Imprimir etiqueta else */
+        printf("%s\n", current_labelStart);
+        
+        /* Etiqueta de fin */
+        printf("%s\n", current_labelEnd);
+        
+        /* Asignar a $$ */
+        (yyval.code) = strdup("");
     }
-#line 1271 "analdesc.tab.c"
+#line 1275 "bison.tab.c"
     break;
 
-  case 10: /* stmt: PRINT MULT COMMA exp  */
-#line 152 "analdesc.y"
-    {
-        printf("\t%s\n", (yyvsp[0].strVal)); // exp
-        printf("\tprint\n");
-        (yyval.voidVal) = NULL; // Asignar valor para <voidVal>
+  case 13: /* elserep: ENDIF  */
+#line 168 "bison.y"
+    { 
+        /* No hay else, nada que hacer */
+        (yyval.code) = strdup("");
     }
-#line 1281 "analdesc.tab.c"
+#line 1284 "bison.tab.c"
     break;
 
-  case 11: /* stmt: ID ASSIGN exp  */
-#line 160 "analdesc.y"
-    {
-        printf("\tvalori %s\n", (yyvsp[-2].strVal)); // ID
-        printf("\t%s\n", (yyvsp[0].strVal));        // exp
-        printf("\tasigna\n");
-        (yyval.voidVal) = NULL; // Asignar valor para <voidVal>
+  case 14: /* elserep: ELSE stmts ENDIF  */
+#line 174 "bison.y"
+    { 
+        /* Else: las acciones de los stmts ya manejan la impresión */
+        (yyval.code) = strdup("");
     }
-#line 1292 "analdesc.tab.c"
+#line 1293 "bison.tab.c"
     break;
 
-  case 12: /* opt_step: COMMA exp  */
-#line 171 "analdesc.y"
+  case 15: /* elserep: ELSEIF LPAREN exp RPAREN THEN stmts elserep  */
+#line 180 "bison.y"
     {
-        (yyval.strVal) = (yyvsp[0].strVal); // exp (incluye 'mete <step>')
-    }
-#line 1300 "analdesc.tab.c"
-    break;
-
-  case 13: /* opt_step: %empty  */
-#line 176 "analdesc.y"
-    {
-        (yyval.strVal) = NULL;
-    }
-#line 1308 "analdesc.tab.c"
-    break;
-
-  case 14: /* elserep: ENDIF  */
-#line 184 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1314 "analdesc.tab.c"
-    break;
-
-  case 15: /* elserep: END IF  */
-#line 187 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1320 "analdesc.tab.c"
-    break;
-
-  case 16: /* elserep: ELSE stmts ENDIF  */
-#line 191 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1326 "analdesc.tab.c"
-    break;
-
-  case 17: /* $@4: %empty  */
-#line 195 "analdesc.y"
-    {
-        // Generar una nueva etiqueta para el siguiente ELSEIF
-        char* newElseLabel = newLabel();
-        printf("%s\n", (yyvsp[-2].strVal)); // exp
+        char *newElseLabel = newLabel();
+        
+        /* Imprimir condición de elseif */
+        printf("%s\n", (yyvsp[-4].code)); /* Código de la expresión */
         printf("\tsifalsovea %s\n", newElseLabel);
-        // Actualizar la etiqueta ELSE, no el endLabel
-        strcpy(currentElseLabel, newElseLabel);
-        // 'currentEndLabel' permanece apuntando al endLabel original
+        
+        /* Saltar al fin del condicional */
+        printf("\tvea %s\n", current_labelEnd);
+        
+        /* Imprimir nueva etiqueta else */
+        printf("%s\n", newElseLabel);
+        
+        /* Actualizar etiqueta else actual */
+        current_labelStart = newElseLabel;
+        
+        /* Asignar a $$ */
+        (yyval.code) = strdup("");
     }
-#line 1340 "analdesc.tab.c"
+#line 1317 "bison.tab.c"
     break;
 
-  case 18: /* elserep: ELSEIF LPAREN exp RPAREN THEN $@4 stmts elserep  */
-#line 206 "analdesc.y"
-    { (yyval.voidVal) = NULL; }
-#line 1346 "analdesc.tab.c"
-    break;
-
-  case 20: /* exp: exp PLUS term  */
-#line 213 "analdesc.y"
+  case 16: /* print_stmt: PRINT MULT COMMA exp  */
+#line 203 "bison.y"
     {
-        char buffer[256];
-        sprintf(buffer, "%s\n%s\nsum", (yyvsp[-2].strVal), (yyvsp[0].strVal));
-        (yyval.strVal) = strdup(buffer);
+        printf("\t%s\n", (yyvsp[0].code)); /* Código de la expresión */
+        printf("\tprint\n");
+        (yyval.code) = strdup("");
     }
-#line 1356 "analdesc.tab.c"
+#line 1327 "bison.tab.c"
     break;
 
-  case 21: /* exp: exp MINUS term  */
-#line 220 "analdesc.y"
+  case 17: /* assign_stmt: ID ASSIGN exp  */
+#line 212 "bison.y"
     {
-        char buffer[256];
-        sprintf(buffer, "%s\n%s\nsub", (yyvsp[-2].strVal), (yyvsp[0].strVal));
-        (yyval.strVal) = strdup(buffer);
+        printf("\tvalori %s\n", (yyvsp[-2].id));
+        printf("\t%s\n", (yyvsp[0].code)); /* Código de la expresión */
+        printf("\tasigna\n");
+        (yyval.code) = strdup("");
     }
-#line 1366 "analdesc.tab.c"
+#line 1338 "bison.tab.c"
     break;
 
-  case 23: /* term: term MULT factor  */
-#line 231 "analdesc.y"
+  case 18: /* exp: exp PLUS term  */
+#line 222 "bison.y"
     {
-        char buffer[256];
-        sprintf(buffer, "%s\n\t%s\n\tmul", (yyvsp[-2].strVal), (yyvsp[0].strVal));
-        (yyval.strVal) = strdup(buffer);
+        /* Generar código para la suma */
+        printf("%s\n%s\nsum\n", (yyvsp[-2].code), (yyvsp[0].code));
+        /* No se necesita retornar código */
+        (yyval.code) = strdup("");
     }
-#line 1376 "analdesc.tab.c"
+#line 1349 "bison.tab.c"
     break;
 
-  case 24: /* term: term DIV factor  */
-#line 238 "analdesc.y"
+  case 19: /* exp: exp MINUS term  */
+#line 230 "bison.y"
     {
-        char buffer[256];
-        sprintf(buffer, "%s\n\t%s\n\tdiv", (yyvsp[-2].strVal), (yyvsp[0].strVal));
-        (yyval.strVal) = strdup(buffer);
+        /* Generar código para la resta */
+        printf("%s\n%s\nsub\n", (yyvsp[-2].code), (yyvsp[0].code));
+        /* No se necesita retornar código */
+        (yyval.code) = strdup("");
     }
-#line 1386 "analdesc.tab.c"
+#line 1360 "bison.tab.c"
     break;
 
-  case 26: /* factor: base POW NUM  */
-#line 249 "analdesc.y"
+  case 20: /* exp: term  */
+#line 238 "bison.y"
+    { 
+        /* El código ya fue generado en term */
+        (yyval.code) = strdup("");
+    }
+#line 1369 "bison.tab.c"
+    break;
+
+  case 21: /* term: term MULT factor  */
+#line 246 "bison.y"
     {
-        if ((yyvsp[0].intVal) == 2) {
-            char buffer[256];
-            sprintf(buffer, "%s\n%s\n\tmul", (yyvsp[-2].strVal), (yyvsp[-2].strVal));
-            (yyval.strVal) = strdup(buffer);
-        } else {
-            char buffer[256];
-            sprintf(buffer, "%s\nmete %d\npow", (yyvsp[-2].strVal), (yyvsp[0].intVal));
-            (yyval.strVal) = strdup(buffer);
+        /* Generar código para la multiplicación */
+        printf("%s\n%s\nmul\n", (yyvsp[-2].code), (yyvsp[0].code));
+        /* No se necesita retornar código */
+        (yyval.code) = strdup("");
+    }
+#line 1380 "bison.tab.c"
+    break;
+
+  case 22: /* term: term DIV factor  */
+#line 254 "bison.y"
+    {
+        /* Generar código para la división */
+        printf("%s\n%s\ndiv\n", (yyvsp[-2].code), (yyvsp[0].code));
+        /* No se necesita retornar código */
+        (yyval.code) = strdup("");
+    }
+#line 1391 "bison.tab.c"
+    break;
+
+  case 23: /* term: factor  */
+#line 262 "bison.y"
+    { 
+        /* El código ya fue generado en factor */
+        (yyval.code) = strdup("");
+    }
+#line 1400 "bison.tab.c"
+    break;
+
+  case 24: /* factor: base POW NUM  */
+#line 270 "bison.y"
+    {
+        if ((yyvsp[0].num) == 2) {
+            /* Optimización para elevar al cuadrado */
+            printf("%s\n%s\n\tmul\n", (yyvsp[-2].code), (yyvsp[-2].code));
         }
+        else {
+            /* General para potencias diferentes de 2 */
+            printf("%s\nmete %d\npow\n", (yyvsp[-2].code), (yyvsp[0].num));
+        }
+        /* No se necesita retornar código */
+        (yyval.code) = strdup("");
     }
-#line 1402 "analdesc.tab.c"
+#line 1417 "bison.tab.c"
     break;
 
-  case 27: /* base: NUM  */
-#line 264 "analdesc.y"
+  case 25: /* factor: base  */
+#line 284 "bison.y"
+    { 
+        /* El código ya fue generado en base */
+        (yyval.code) = strdup("");
+    }
+#line 1426 "bison.tab.c"
+    break;
+
+  case 26: /* base: NUM  */
+#line 292 "bison.y"
     {
-        char buffer[50];
-        sprintf(buffer, "mete %d", (yyvsp[0].intVal));
-        (yyval.strVal) = strdup(buffer);
+        printf("mete %d\n", (yyvsp[0].num));
+        (yyval.code) = strdup("");
     }
-#line 1412 "analdesc.tab.c"
+#line 1435 "bison.tab.c"
     break;
 
-  case 28: /* base: ID  */
-#line 271 "analdesc.y"
+  case 27: /* base: ID  */
+#line 298 "bison.y"
     {
-        char buffer[50];
-        sprintf(buffer, "\tvalord %s", (yyvsp[0].strVal));
-        (yyval.strVal) = strdup(buffer);
+        printf("\tvalord %s\n", (yyvsp[0].id));
+        (yyval.code) = strdup("");
     }
-#line 1422 "analdesc.tab.c"
+#line 1444 "bison.tab.c"
     break;
 
-  case 29: /* base: LPAREN exp RPAREN  */
-#line 278 "analdesc.y"
-    {
-        (yyval.strVal) = (yyvsp[-1].strVal);
+  case 28: /* base: LPAREN exp RPAREN  */
+#line 304 "bison.y"
+    { 
+        /* El código ya fue generado en exp */
+        (yyval.code) = strdup("");
     }
-#line 1430 "analdesc.tab.c"
+#line 1453 "bison.tab.c"
     break;
 
 
-#line 1434 "analdesc.tab.c"
+#line 1457 "bison.tab.c"
 
       default: break;
     }
@@ -1623,22 +1646,18 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 283 "analdesc.y"
+#line 310 "bison.y"
 
 
-#include <ctype.h>
-
-// Función para manejar errores
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
 }
 
-// Función principal
-int main(int argc, char** argv) {
-    if(argc > 1) {
+int main(int argc, char **argv) {
+    if (argc > 1) {
         FILE *file = fopen(argv[1], "r");
-        if(!file) {
-            perror(argv[1]);
+        if (!file) {
+            perror("fopen");
             return 1;
         }
         yyin = file;

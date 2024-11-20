@@ -3,43 +3,63 @@
 #include <stdlib.h>
 #include <string.h>
 
-int yylex();
-void yyerror(const char *s);
+// Declaraciones para Flex
+extern int yylex();
+extern int yyparse();
+extern FILE *yyin;
 
+// Contador para etiquetas únicas
 int labelCount = 0;
-char *newLabel() {
-    char *label = malloc(20);
+
+// Función para generar nuevas etiquetas
+char* newLabel() {
+    char* label = malloc(20);
+    if (!label) {
+        fprintf(stderr, "Error de memoria al generar etiquetas.\n");
+        exit(1);
+    }
     sprintf(label, "LBL%d", labelCount++);
     return label;
 }
+
+// Variables para almacenar identificadores del programa
+char* prog_id1;
+char* prog_id2;
+
+// Variables para almacenar etiquetas actuales
+char currentElseLabel[20];
+char currentEndLabel[20];
+char* currentLabelStart;
+char* currentLabelEnd;
+
+// Prototipos de funciones
+void yyerror(const char *s);
 %}
 
 %union {
     int intVal;
-    char *strVal;
-    struct {
-        char *code;
-    } exprVal;
-    struct {
-        char *elseLabel;
-        char *endLabel;
-    } ifLabels;
+    char* strVal;
+    void* voidVal; // Para no terminales que no retornan valor
 }
 
-%token PROGRAM ENDIF END DO IF THEN ELSE ELSEIF PRINT ASSIGN COMMA LPAREN RPAREN
-%token PLUS MINUS MULT DIV POW
-%token <intVal> NUM
 %token <strVal> ID
+%token <intVal> NUM
+%token PROGRAM ENDIF END DO IF THEN ELSE ELSEIF PRINT
+%token ASSIGN COMMA LPAREN RPAREN PLUS MINUS MULT DIV POW
 
-%type <ifLabels> if_stmt_start elseif_stmt elserep
-%type <exprVal> exp term factor base
-%type <strVal> opt_step
+%type <strVal> exp term factor base opt_step
+%type <voidVal> stmts stmt elserep
+
+%start program
 
 %%
 
 program:
-    PROGRAM ID stmts END PROGRAM ID {
-        if (strcasecmp($2, $6) != 0) {
+    PROGRAM ID stmts END PROGRAM ID
+    {
+        prog_id1 = $2;
+        prog_id2 = $6;
+        if (strcasecmp(prog_id1, prog_id2) != 0) {
             fprintf(stderr, "Error: Los identificadores del programa no coinciden.\n");
             exit(1);
         }
@@ -47,190 +67,238 @@ program:
     ;
 
 stmts:
-    /* vacío */
-|
+    /* Regla vacía */
+    { $$ = NULL; }
+    |
     stmts stmt
+    { $$ = NULL; }
     ;
 
 stmt:
-    DO ID ASSIGN exp COMMA exp opt_step stmts END DO {
-        char *initExp = $4.exprVal.code;
-        char *limitExp = $6.exprVal.code;
-        char *stepExp = $<strVal>7; // Especificamos el tipo de $7
-        char *id = $2;
-        char *labelStart = newLabel();
-        char *labelEnd = newLabel();
-
-        // Inicialización de la variable de control
-        printf("\tvalori %s\n", id);
-        printf("%s\n", initExp);
+    /* Bucle DO con acciones intermedias */
+    DO ID ASSIGN exp COMMA exp opt_step 
+    {
+        // Inicialización de la variable
+        printf("\tvalori %s\n", $2); // ID
+        printf("\t%s\n", $4);        // 'mete <exp>'
         printf("\tasigna\n");
 
-        // Etiqueta de inicio del bucle
-        printf("%s:\n", labelStart);
+        // Generación de etiquetas
+        currentLabelStart = newLabel();
+        printf("%s:\n", currentLabelStart);
+    }
+    /* Acción intermedia: procesar el cuerpo del bucle */
+    stmts 
+    { 
+        // Después de procesar el cuerpo del bucle, generar el código de incremento y condición
 
-        // Código del bloque 'stmts' ya generado
+        // Obtener el valor actual de la variable
+        printf("\tvalori %s\n", $2); // ID
+        printf("\tvalord %s\n", $2); // ID
 
-        // Incremento de la variable de control
-        printf("\tvalori %s\n", id);
-        printf("\tvalord %s\n", id);
-        if (stepExp != NULL) {
-            printf("%s\n", stepExp);
+        // Paso del bucle
+        if ($7 != NULL) {            // opt_step
+            printf("\t%s\n", $7);    // Código del paso (ya incluye 'mete')
         } else {
-            printf("\tmete 1\n");
+            printf("\tmete 1\n");     // Paso por defecto
         }
+
+        // Sumar el paso al valor actual
         printf("\tsum\n");
         printf("\tasigna\n");
 
-        // Comparación de la variable de control con el límite
-        printf("\tvalord %s\n", id);
-        printf("%s\n", limitExp);
-        printf("\tsub\n"); // Calculamos x - limit
+        // Obtener el nuevo valor de la variable
+        printf("\tvalord %s\n", $2); // ID
 
-        // Si x <= limit, continuamos el bucle
-        printf("\tsiciertovea %s\n", labelStart);
+        // Comparar con el límite
+        printf("\t%s\n", $6);        // 'mete <límite>'
+        printf("\tsub\n");
 
-        // Etiqueta de fin del bucle
-        printf("%s:\n", labelEnd);
+        // Salto condicional al inicio del bucle si la condición se cumple
+        printf("\tsiciertovea %s\n", currentLabelStart);
     }
-|
-    if_stmt_start stmts elserep {
-        printf("\tvea %s\n", $1.endLabel); // endLabel
-        printf("%s:\n", $1.elseLabel);     // elseLabel
-        // Código de 'elserep' ya generado
-        printf("%s:\n", $1.endLabel);      // endLabel
+    END DO 
+    { 
+        // Definir etiqueta de fin del bucle (no utilizada en este caso)
+        printf("%s:\n", newLabel());
+        $$ = NULL; // Asignar valor para <voidVal>
     }
-|
-    PRINT MULT COMMA exp {
-        printf("%s\n", $4.exprVal.code);
+    |
+    /* Condicional IF con ELSEIF y ELSE */
+    IF LPAREN exp RPAREN THEN
+    {
+        // Generar etiquetas para else y fin
+        char* elseLabel = newLabel();
+        char* endLabel = newLabel();
+        printf("%s\n", $3); // exp
+        printf("\tsifalsovea %s\n", elseLabel);
+        // Guardar etiquetas en variables globales para usarlas en elserep
+        strcpy(currentElseLabel, elseLabel);
+        strcpy(currentEndLabel, endLabel);
+    }
+    stmts
+    elserep
+    {
+        // Imprimir salto hacia el final del bloque condicional
+        printf("\tvea %s\n", currentEndLabel);
+        // Definir etiquetas de else y fin
+        printf("%s:\n", currentElseLabel);
+        printf("%s:\n", currentEndLabel);
+        $$ = NULL; // Asignar valor para <voidVal>
+    }
+    |
+    /* Sentencia PRINT */
+    PRINT MULT COMMA exp
+    {
+        printf("\t%s\n", $4); // exp
         printf("\tprint\n");
+        $$ = NULL; // Asignar valor para <voidVal>
     }
-|
-    ID ASSIGN exp {
-        printf("\tvalori %s\n", $1);
-        printf("%s\n", $3.exprVal.code);
+    |
+    /* Asignación */
+    ID ASSIGN exp
+    {
+        printf("\tvalori %s\n", $1); // ID
+        printf("\t%s\n", $3);        // exp
         printf("\tasigna\n");
+        $$ = NULL; // Asignar valor para <voidVal>
     }
     ;
 
 opt_step:
-    /* vacío */ { $$ = NULL; }
-|
-    COMMA exp {
-        $$ = $2.exprVal.code;
+    /* Paso opcional */
+    COMMA exp
+    {
+        $$ = $2; // exp (incluye 'mete <step>')
     }
-    ;
-
-if_stmt_start:
-    IF LPAREN exp RPAREN THEN {
-        $$.elseLabel = newLabel();
-        $$.endLabel = newLabel();
-        printf("%s\n", $3.exprVal.code);
-        printf("\tsifalsovea %s\n", $$.elseLabel);
+    |
+    /* Regla vacía */
+    {
+        $$ = NULL;
     }
     ;
 
 elserep:
-    ENDIF { /* Nada que hacer */ }
-|
-    ELSE stmts ENDIF { /* Código de 'stmts' ya generado */ }
-|
-    elseif_stmt stmts elserep {
-        printf("\tvea %s\n", $1.endLabel);      // endLabel
-        printf("%s:\n", $1.elseLabel);          // newElseLabel
-        // Código de 'stmts' y 'elserep' ya generado
+    /* Manejo de ENDIF o END IF */
+    ENDIF
+    { $$ = NULL; }
+    |
+    END IF
+    { $$ = NULL; }
+    |
+    /* Manejo de ELSE */
+    ELSE stmts ENDIF
+    { $$ = NULL; }
+    |
+    /* Manejo de ELSEIF */
+    ELSEIF LPAREN exp RPAREN THEN
+    {
+        // Generar una nueva etiqueta para el siguiente ELSEIF
+        char* newElseLabel = newLabel();
+        printf("%s\n", $3); // exp
+        printf("\tsifalsovea %s\n", newElseLabel);
+        // Actualizar la etiqueta ELSE, no el endLabel
+        strcpy(currentElseLabel, newElseLabel);
+        // 'currentEndLabel' permanece apuntando al endLabel original
     }
-    ;
-
-elseif_stmt:
-    ELSEIF LPAREN exp RPAREN THEN {
-        $$.elseLabel = newLabel();
-        $$.endLabel = newLabel(); // Generamos un nuevo endLabel
-        printf("%s\n", $3.exprVal.code);
-        printf("\tsifalsovea %s\n", $$.elseLabel);
-    }
+    stmts
+    elserep
+    { $$ = NULL; }
     ;
 
 exp:
-    exp PLUS term {
-        char *code = malloc(strlen($1.exprVal.code) + strlen($3.exprVal.code) + 10);
-        sprintf(code, "%s\n%s\n\tsum", $1.exprVal.code, $3.exprVal.code);
-        $$.exprVal.code = code;
+    term
+    |
+    exp PLUS term
+    {
+        char buffer[256];
+        sprintf(buffer, "%s\n%s\nsum", $1, $3);
+        $$ = strdup(buffer);
     }
-|
-    exp MINUS term {
-        char *code = malloc(strlen($1.exprVal.code) + strlen($3.exprVal.code) + 10);
-        sprintf(code, "%s\n%s\n\tsub", $1.exprVal.code, $3.exprVal.code);
-        $$.exprVal.code = code;
-    }
-|
-    term {
-        $$.exprVal.code = $1.exprVal.code;
+    |
+    exp MINUS term
+    {
+        char buffer[256];
+        sprintf(buffer, "%s\n%s\nsub", $1, $3);
+        $$ = strdup(buffer);
     }
     ;
 
 term:
-    term MULT factor {
-        char *code = malloc(strlen($1.exprVal.code) + strlen($3.exprVal.code) + 10);
-        sprintf(code, "%s\n%s\n\tmul", $1.exprVal.code, $3.exprVal.code);
-        $$.exprVal.code = code;
+    factor
+    |
+    term MULT factor
+    {
+        char buffer[256];
+        sprintf(buffer, "%s\n\t%s\n\tmul", $1, $3);
+        $$ = strdup(buffer);
     }
-|
-    term DIV factor {
-        char *code = malloc(strlen($1.exprVal.code) + strlen($3.exprVal.code) + 10);
-        sprintf(code, "%s\n%s\n\tdiv", $1.exprVal.code, $3.exprVal.code);
-        $$.exprVal.code = code;
-    }
-|
-    factor {
-        $$.exprVal.code = $1.exprVal.code;
+    |
+    term DIV factor
+    {
+        char buffer[256];
+        sprintf(buffer, "%s\n\t%s\n\tdiv", $1, $3);
+        $$ = strdup(buffer);
     }
     ;
 
 factor:
-    base POW NUM {
+    base
+    |
+    base POW NUM
+    {
         if ($3 == 2) {
-            char *code = malloc(strlen($1.exprVal.code) * 2 + 10);
-            sprintf(code, "%s\n%s\n\tmul", $1.exprVal.code, $1.exprVal.code);
-            $$.exprVal.code = code;
+            char buffer[256];
+            sprintf(buffer, "%s\n%s\n\tmul", $1, $1);
+            $$ = strdup(buffer);
         } else {
-            char *code = malloc(strlen($1.exprVal.code) + 20);
-            sprintf(code, "%s\n\tmete %d\n\tpow", $1.exprVal.code, $3);
-            $$.exprVal.code = code;
+            char buffer[256];
+            sprintf(buffer, "%s\nmete %d\npow", $1, $3);
+            $$ = strdup(buffer);
         }
-    }
-|
-    base {
-        $$.exprVal.code = $1.exprVal.code;
     }
     ;
 
 base:
-    NUM {
-        char *code = malloc(20);
-        sprintf(code, "\tmete %d", $1);
-        $$.exprVal.code = code;
+    NUM
+    {
+        char buffer[50];
+        sprintf(buffer, "mete %d", $1);
+        $$ = strdup(buffer);
     }
-|
-    ID {
-        char *code = malloc(strlen($1) + 20);
-        sprintf(code, "\tvalord %s", $1);
-        $$.exprVal.code = code;
+    |
+    ID
+    {
+        char buffer[50];
+        sprintf(buffer, "\tvalord %s", $1);
+        $$ = strdup(buffer);
     }
-|
-    LPAREN exp RPAREN {
-        $$.exprVal.code = $2.exprVal.code;
+    |
+    LPAREN exp RPAREN
+    {
+        $$ = $2;
     }
     ;
 
 %%
 
+#include <ctype.h>
+
+// Función para manejar errores
 void yyerror(const char *s) {
-    fprintf(stderr, "Error de sintaxis: %s\n", s);
-    exit(1);
+    fprintf(stderr, "Error: %s\n", s);
 }
 
-int main() {
+// Función principal
+int main(int argc, char** argv) {
+    if(argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if(!file) {
+            perror(argv[1]);
+            return 1;
+        }
+        yyin = file;
+    }
     yyparse();
     return 0;
 }

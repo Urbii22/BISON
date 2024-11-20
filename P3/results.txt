@@ -1,0 +1,196 @@
+Ante una entrada como:
+
+! Inicio programa
+program Ej1 
+    i=i**2          ! Eleva al cuadrado la variable i
+    if (a-10)       ! Evalúa la expresión
+    then print *, x 
+    else print *, y
+    endif           ! Fin del condicional
+    i=(0-1+2)* a - (i)
+! Fin del programa
+end program Ej1
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valori i
+	valord i
+	valord i
+	mult
+	asigna
+	valord a
+	mete 10
+	sub
+	sifalsovea LBL0
+	valord x
+	print 
+	vea LBL1
+LBL0
+	valord y
+	print 
+LBL1
+	valori i
+	mete 0
+	mete 1
+	sub
+	mete 2
+	sum
+	valord a
+	mul
+	valord i
+	sub
+	asigna
+
+
+
+Ante una entrada como:
+
+program Ej2 
+    ! Ejemplo if...elseif
+    if (a)
+    then
+        a = 10 * 10
+    elseif (b)
+    then
+        b = 5
+    else
+        c = 15    
+    endif
+
+    ! Ejemplo de bucle con paso
+    do a = 1 , 10 , 2 
+        print *, a * 5
+    end do
+end program Ej2 
+
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valord a
+	sifalsovea LBL0
+	valori a
+	mete 10
+	mete 10
+	mul
+	asigna
+	vea LBL1
+LBL0
+	valord b
+	sifalsovea LBL2
+	valori b
+	mete 5
+	asigna
+	vea LBL1
+LBL2
+	valori c
+	mete 15
+	asigna
+LBL1
+	valori a
+	mete 1
+	asigna
+LBL3
+	valord a
+	mete 5
+	mul
+	print 
+	valori a
+	valord a
+	mete 2
+	sum 
+	asigna 
+	valord a
+	mete 10
+	sub 
+	siciertovea LBL3
+
+
+
+Ante una entrada como:
+
+<! Ejemplo de un bucle anidado:
+   - El primero inicializa var5 a 10 y en pasos de 5 llega a 100
+   - El segundo inicializa inner a 1  en pasos de 1 llega a 55
+!>
+program Ej3 
+    do var5 = 10 , 100 , 5
+        print *, var5
+        do inner = 0+1, 55
+            print *, inner / 2
+        end do
+        res = 6 * 1 + 5
+    end do
+end program Ej3 
+
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valori var5
+	mete 10
+	asigna
+LBL0
+	valord var5
+	print 
+	valori inner
+	mete 0
+	mete 1
+	sum
+	asigna
+LBL1
+	valord inner
+	mete 2
+	div
+	print 
+	valori inner
+	valord inner
+	mete 1
+	sum 
+	asigna 
+	valord inner
+	mete 55
+	sub 
+	siciertovea LBL1
+	valori res
+	mete 6
+	mete 1
+	mul
+	mete 5
+	sum
+	asigna
+	valori var5
+	valord var5
+	mete 5
+	sum 
+	asigna 
+	valord var5
+	mete 100
+	sub 
+	siciertovea LBL0
+
+
+
+
+
+program Prueba
+  do x = 1 , 10
+       print *, 99
+    end do
+end program Prueba
+ 
+Salida esperada:
+ 
+    valori x
+    mete 1
+    asigna
+LBL0
+    mete 99
+    print 
+    valori x
+    valord x
+    mete 1
+    sum 
+    asigna 
+    valord x
+    mete 10
+    sub 
+    siciertovea LBL0
