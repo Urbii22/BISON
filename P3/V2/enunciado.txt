@@ -1,0 +1,225 @@
+Se trata de utilizar bison para obtener un compilador que traduzca un 
+lenguaje de alto nivel a código de la máquina de pila abstracta. Es decir,
+lo mismo que se ha hecho con JavaCC, pero esta vez usando un generador
+de analizadores ascendentes como es bison.
+
+El lenguaje de alto nivel es muy sencillo. No tiene declaración de tipos.
+Y el único tipo que permite es el tipo entero. En las condiciones de las
+instrucciones if y while el valor 0 se interpreta como falso y cualquier 
+otro valor como cierto.
+
+Además de las operaciones aritméticas, existe el operador de elevar a una
+potencia (**). Funciona como en Python.
+
+Tiene un único tipo de bucle (do) pero con doble sintaxis: si se le 
+indica el paso/incremento o si no se le pasa. Si no se le pasa el 
+incremento, la variable aumentará de uno en uno, sino de lo que marque 
+el paso.
+
+Los comentarios son en línea comenzando con el carácter '!', y multilínea 
+entre (<! y !>).
+
+El terminal 'NUM' representa un número entero e 'ID' un identificador/variable
+del lenguaje. Los identificadores tienen un máximo de 31 caracteres que 
+pueden ser letras, números o guiones bajos (pero deben comenzar por letra).
+
+Debe ser capaz de leer por entrada estándar (teclado) y por un fichero
+que se le pase por argumento.
+
+
+La gramática del lenguaje es la siguiente:
+
+ program -> 'program' ID stmts 'end' 'program' ID
+   stmts -> stmt stmts
+         |  stmt
+    stmt -> 'do' ID '=' exp ',' NUM stmts 'end' 'do'
+         |  'do' ID '=' exp ',' NUM ',' NUM stmts 'end' 'do'
+         |  'if' '(' exp ')' 'then' stmts elserep
+         |  'print' '*' ',' exp
+         |  ID '=' exp
+ elserep -> 'endif'
+         |  'else' stmts 'endif'
+         |  'elseif' '(' exp ')' 'then' stmts elserep
+     exp -> multexp '+' exp
+         |  multexp '-' exp
+         |  multexp
+         |  ID '**' NUM
+ multexp -> value '*' multexp
+         |  value '/' multexp
+         |  value
+   value -> NUM | ID | '(' exp ')'
+
+NOTA: Podría ser necesaria alguna transformación en la la gramática (eliminación
+      de recursividad, factorización...) antes de empezar a programar en JavaCC.
+      De hecho, la transformación también podría ser la utilización de los
+      operadores avanzados de JavaCC, como: '?', '*'...
+
+
+Ante una entrada como:
+
+! Inicio programa
+program Ej1 
+    i=i**2          ! Eleva al cuadrado la variable i
+    if (a-10)       ! Evalúa la expresión
+    then print *, x 
+    else print *, y
+    endif           ! Fin del condicional
+    i=(0-1+2)* a - (i)
+! Fin del programa
+end program Ej1
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valori i
+	valord i
+	valord i
+	mult
+	asigna
+	valord a
+	mete 10
+	sub
+	sifalsovea LBL0
+	valord x
+	print 
+	vea LBL1
+LBL0
+	valord y
+	print 
+LBL1
+	valori i
+	mete 0
+	mete 1
+	sub
+	mete 2
+	sum
+	valord a
+	mul
+	valord i
+	sub
+	asigna
+
+
+
+Ante una entrada como:
+
+program Ej2 
+    ! Ejemplo if...elseif
+    if (a)
+    then
+        a = 10 * 10
+    elseif (b)
+    then
+        b = 5
+    else
+        c = 15    
+    endif
+
+    ! Ejemplo de bucle con paso
+    do a = 1 , 10 , 2 
+        print *, a * 5
+    end do
+end program Ej2 
+
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valord a
+	sifalsovea LBL0
+	valori a
+	mete 10
+	mete 10
+	mul
+	asigna
+	vea LBL1
+LBL0
+	valord b
+	sifalsovea LBL2
+	valori b
+	mete 5
+	asigna
+	vea LBL1
+LBL2
+	valori c
+	mete 15
+	asigna
+LBL1
+	valori a
+	mete 1
+	asigna
+LBL3
+	valord a
+	mete 5
+	mul
+	print 
+	valori a
+	valord a
+	mete 2
+	sum 
+	asigna 
+	valord a
+	mete 10
+	sub 
+	siciertovea LBL3
+
+
+
+Ante una entrada como:
+
+<! Ejemplo de un bucle anidado:
+   - El primero inicializa var5 a 10 y en pasos de 5 llega a 100
+   - El segundo inicializa inner a 1  en pasos de 1 llega a 55
+!>
+program Ej3 
+    do var5 = 10 , 100 , 5
+        print *, var5
+        do inner = 0+1, 55
+            print *, inner / 2
+        end do
+        res = 6 * 1 + 5
+    end do
+end program Ej3 
+
+
+Debería mostrar (excepto quizá el número de las etiquetas):
+
+	valori var5
+	mete 10
+	asigna
+LBL0
+	valord var5
+	print 
+	valori inner
+	mete 0
+	mete 1
+	sum
+	asigna
+LBL1
+	valord inner
+	mete 2
+	div
+	print 
+	valori inner
+	valord inner
+	mete 1
+	sum 
+	asigna 
+	valord inner
+	mete 55
+	sub 
+	siciertovea LBL1
+	valori res
+	mete 6
+	mete 1
+	mul
+	mete 5
+	sum
+	asigna
+	valori var5
+	valord var5
+	mete 5
+	sum 
+	asigna 
+	valord var5
+	mete 100
+	sub 
+	siciertovea LBL0

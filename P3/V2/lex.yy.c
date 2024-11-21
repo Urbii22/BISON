@@ -502,8 +502,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "flex.l"
-#line 2 "flex.l"
+#line 1 "flex2.l"
+#line 2 "flex2.l"
 #include "bison.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -728,7 +728,7 @@ YY_DECL
 		}
 
 	{
-#line 11 "flex.l"
+#line 11 "flex2.l"
 
 
 #line 735 "lex.yy.c"
@@ -790,144 +790,144 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 13 "flex.l"
+#line 13 "flex2.l"
 {BEGIN(COM);}   //Comentarios multilÌnea 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 14 "flex.l"
+#line 14 "flex2.l"
 {BEGIN(INITIAL);} 
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 15 "flex.l"
+#line 15 "flex2.l"
 ;
 	YY_BREAK
 /* Palabras clave (insensibles a mayúsculas) */
 case 4:
 YY_RULE_SETUP
-#line 18 "flex.l"
+#line 18 "flex2.l"
 { return PROGRAM; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 19 "flex.l"
+#line 19 "flex2.l"
 { return ENDIF; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 20 "flex.l"
+#line 20 "flex2.l"
 { return END; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 21 "flex.l"
+#line 21 "flex2.l"
 { return DO; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 22 "flex.l"
+#line 22 "flex2.l"
 { return IF; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 23 "flex.l"
+#line 23 "flex2.l"
 { return THEN; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 24 "flex.l"
+#line 24 "flex2.l"
 { return ELSE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 25 "flex.l"
+#line 25 "flex2.l"
 { return ELSEIF; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 26 "flex.l"
+#line 26 "flex2.l"
 { return PRINT; }
 	YY_BREAK
 /* Operadores y símbolos */
 case 13:
 YY_RULE_SETUP
-#line 29 "flex.l"
+#line 29 "flex2.l"
 { return POW; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 30 "flex.l"
+#line 30 "flex2.l"
 { return ASSIGN; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 31 "flex.l"
+#line 31 "flex2.l"
 { return COMMA; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 32 "flex.l"
+#line 32 "flex2.l"
 { return LPAREN; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 33 "flex.l"
+#line 33 "flex2.l"
 { return RPAREN; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 34 "flex.l"
-{ return PLUS; }
+#line 34 "flex2.l"
+{ return SUM; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 35 "flex.l"
-{ return MINUS; }
+#line 35 "flex2.l"
+{ return RESTA; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 36 "flex.l"
+#line 36 "flex2.l"
 { return MULT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 37 "flex.l"
+#line 37 "flex2.l"
 { return DIV; }
 	YY_BREAK
 /* Números */
 case 22:
 YY_RULE_SETUP
-#line 40 "flex.l"
+#line 40 "flex2.l"
 { yylval.num = atoi(yytext); return NUM; }
 	YY_BREAK
 /* Identificadores: comienzan con una letra, seguidos de hasta 30 letras, dígitos o guiones bajos */
 case 23:
 YY_RULE_SETUP
-#line 43 "flex.l"
+#line 43 "flex2.l"
 { yylval.id = strdup(yytext); return ID; }
 	YY_BREAK
 case 24:
 /* rule 24 can match eol */
 YY_RULE_SETUP
-#line 45 "flex.l"
+#line 45 "flex2.l"
 ;   // Ignorar espacios, tabuladores, saltos de lÌnea 
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 46 "flex.l"
+#line 46 "flex2.l"
 ;   // Ignorar comentarios de linea 
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 47 "flex.l"
+#line 47 "flex2.l"
 return yytext[0];   // Devolver cualquier otro caracter 
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 48 "flex.l"
+#line 48 "flex2.l"
 ECHO;
 	YY_BREAK
 #line 934 "lex.yy.c"
@@ -1936,7 +1936,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 48 "flex.l"
+#line 48 "flex2.l"
 
 
 
