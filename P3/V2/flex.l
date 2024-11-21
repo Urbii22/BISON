@@ -10,7 +10,7 @@
 
 %%
 
-"<!"        {BEGIN(COM);}   //Comentarios multilÌnea 
+"<!"        {BEGIN(COM);}   //Comentarios multilÌnea l
 <COM>"!>"   {BEGIN(INITIAL);} 
 <COM>.|\n   ;
 
