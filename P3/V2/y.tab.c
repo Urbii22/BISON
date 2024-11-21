@@ -92,20 +92,10 @@ char* newLabel() {
     return label;
 }
 
-// Variables para almacenar identificadores del programa
-char* prog_id1;
-char* prog_id2;
-
-// Variables para almacenar etiquetas actuales
-char currentElseLabel[20];
-char currentEndLabel[20];
-char* currentLabelStart;
-char* currentLabelEnd;
-
 // Prototipos de funciones
 void yyerror(const char *s);
 
-#line 109 "y.tab.c"
+#line 99 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -202,12 +192,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 39 "bison2.y"
+#line 29 "bison2.y"
 
     int num;
     char* id;
+    char* str;
 
-#line 211 "y.tab.c"
+#line 202 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -254,10 +245,18 @@ enum yysymbol_kind_t
   YYSYMBOL_program = 24,                   /* program  */
   YYSYMBOL_stmts = 25,                     /* stmts  */
   YYSYMBOL_stmt = 26,                      /* stmt  */
-  YYSYMBOL_elserep = 27,                   /* elserep  */
-  YYSYMBOL_exp = 28,                       /* exp  */
-  YYSYMBOL_multexp = 29,                   /* multexp  */
-  YYSYMBOL_value = 30                      /* value  */
+  YYSYMBOL_asigna_stmt = 27,               /* asigna_stmt  */
+  YYSYMBOL_print_stmt = 28,                /* print_stmt  */
+  YYSYMBOL_if_stmt = 29,                   /* if_stmt  */
+  YYSYMBOL_elserep = 30,                   /* elserep  */
+  YYSYMBOL_do_stmt = 31,                   /* do_stmt  */
+  YYSYMBOL_32_1 = 32,                      /* $@1  */
+  YYSYMBOL_33_2 = 33,                      /* $@2  */
+  YYSYMBOL_34_3 = 34,                      /* $@3  */
+  YYSYMBOL_35_4 = 35,                      /* $@4  */
+  YYSYMBOL_exp = 36,                       /* exp  */
+  YYSYMBOL_multexp = 37,                   /* multexp  */
+  YYSYMBOL_value = 38                      /* value  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -585,16 +584,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   98
+#define YYLAST   87
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  23
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  8
+#define YYNNTS  16
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  22
+#define YYNRULES  30
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  68
+#define YYNSTATES  76
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   277
@@ -643,11 +642,12 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int8 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    59,    59,    64,    65,    70,    71,    72,    73,    74,
-      79,    80,    81,    86,    87,    88,    89,    94,    95,    96,
-     101,   102,   103
+       0,    52,    52,    64,    65,    70,    71,    72,    73,    78,
+      88,    96,   110,   111,   112,   119,   134,   118,   146,   162,
+     145,   175,   180,   185,   189,   202,   207,   212,   220,   225,
+     230
 };
 #endif
 
@@ -666,8 +666,9 @@ static const char *const yytname[] =
   "\"end of file\"", "error", "\"invalid token\"", "ID", "NUM", "PROGRAM",
   "END", "DO", "IF", "THEN", "ELSE", "ENDIF", "ELSEIF", "PRINT", "ASSIGN",
   "MULT", "DIV", "POW", "SUM", "RESTA", "LPAREN", "RPAREN", "COMMA",
-  "$accept", "program", "stmts", "stmt", "elserep", "exp", "multexp",
-  "value", YY_NULLPTR
+  "$accept", "program", "stmts", "stmt", "asigna_stmt", "print_stmt",
+  "if_stmt", "elserep", "do_stmt", "$@1", "$@2", "$@3", "$@4", "exp",
+  "multexp", "value", YY_NULLPTR
 };
 
 static const char *
@@ -677,7 +678,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-43)
+#define YYPACT_NINF (-46)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -691,13 +692,14 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -3,    11,     6,    26,   -43,    14,    13,    15,    33,    24,
-     -43,    16,    27,    16,    30,    54,   -43,    47,   -43,    16,
-       3,    28,   -43,    16,    68,    16,    57,    67,    72,    16,
-      16,    22,    22,    63,    74,     3,   -43,   -43,   -43,   -43,
-     -43,   -43,   -43,   -43,    84,    26,     2,    43,    88,    55,
-      26,   -43,    52,   -43,    26,    69,    62,    16,    71,   -43,
-     -43,    76,    73,    87,   -43,    26,    43,   -43
+       5,     9,    16,    45,   -46,     7,    20,    26,    46,    28,
+     -46,   -46,   -46,   -46,   -46,    -1,    42,    -1,    50,    58,
+     -46,    52,   -46,    -1,    14,    39,   -46,    -1,    19,    -1,
+      64,    71,    41,     2,     2,     2,     2,    -4,    67,    14,
+     -46,   -46,   -46,   -46,    39,    39,   -46,   -46,    73,    45,
+      56,    17,    75,    45,    45,   -46,    60,   -46,   -46,    45,
+      36,    -1,    45,    76,   -46,    47,    45,    74,    77,    78,
+     -46,    45,    80,    17,   -46,   -46
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -706,24 +708,27 @@ static const yytype_int8 yypact[] =
 static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     0,     1,     0,     0,     0,     0,     0,
-       4,     0,     0,     0,     0,     0,     3,    21,    20,     0,
-       9,    15,    19,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     8,     2,    16,    22,    13,
-      14,    21,    17,    18,     0,     0,     0,     0,     0,     0,
-       0,    10,     0,     7,     0,     0,     0,     0,     0,     5,
-      11,     0,     0,     0,     6,     0,     0,    12
+       4,     5,     8,     7,     6,     0,     0,     0,     0,     0,
+       3,    29,    28,     0,     9,    23,    27,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    10,
+       2,    24,    30,    29,    21,    22,    25,    26,     0,     0,
+      15,     0,     0,     0,     0,    12,     0,    11,    18,    16,
+       0,     0,     0,     0,    13,     0,    19,     0,     0,     0,
+      17,     0,     0,     0,    20,    14
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -43,   -43,   -42,    -9,    32,   -12,    35,   -43
+     -46,   -46,   -45,    -9,   -46,   -46,   -46,    10,   -46,   -46,
+     -46,   -46,   -46,   -16,    37,    38
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     2,     9,    10,    53,    20,    21,    22
+       0,     2,     9,    10,    11,    12,    13,    57,    14,    53,
+      63,    62,    69,    24,    25,    26
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -731,30 +736,28 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      16,    24,     1,    47,    49,     5,     4,    28,    56,     6,
-       7,    33,    58,    35,     3,     8,    12,    39,    40,    17,
-      18,    29,    30,    66,    48,    41,    18,     5,    11,     5,
-      15,     6,     7,     6,     7,    13,    19,     8,    16,     8,
-      16,    23,    19,    31,    32,    61,     5,    16,    14,    16,
-       6,     7,    25,    50,    51,    52,     8,    16,     5,    26,
-      36,    55,     6,     7,    27,     5,    42,    43,     8,     6,
-       7,    37,    57,    60,     5,     8,    59,    62,     6,     7,
-      64,    29,    30,    45,     8,    44,    29,    30,    46,    34,
-      29,    30,    54,    38,    29,    30,    65,    63,    67
+      20,    28,    21,    22,    51,    43,    22,    32,    59,    60,
+       1,    37,     3,    39,    33,    34,     4,    66,    48,    23,
+       5,    15,    23,    16,     6,     7,    73,    54,    55,    56,
+       8,     5,    33,    34,    19,     6,     7,    33,    34,     5,
+      38,     8,    20,     6,     7,    65,    17,    64,     5,     8,
+      20,    20,     6,     7,    35,    36,    27,    20,     8,    33,
+      34,    18,    42,    30,    20,    33,    34,    40,    68,    31,
+      44,    45,    29,    46,    47,    41,    49,    50,    52,    58,
+      61,    70,    67,    75,    72,     0,    71,    74
 };
 
 static const yytype_int8 yycheck[] =
 {
-       9,    13,     5,    45,    46,     3,     0,    19,    50,     7,
-       8,    23,    54,    25,     3,    13,     3,    29,    30,     3,
-       4,    18,    19,    65,    22,     3,     4,     3,    14,     3,
-       6,     7,     8,     7,     8,    20,    20,    13,    47,    13,
-      49,    14,    20,    15,    16,    57,     3,    56,    15,    58,
-       7,     8,    22,    10,    11,    12,    13,    66,     3,     5,
-       3,     6,     7,     8,    17,     3,    31,    32,    13,     7,
-       8,     4,    20,    11,     3,    13,     7,     6,     7,     8,
-       7,    18,    19,     9,    13,    22,    18,    19,     4,    21,
-      18,    19,     4,    21,    18,    19,     9,    21,    66
+       9,    17,     3,     4,    49,     3,     4,    23,    53,    54,
+       5,    27,     3,    29,    18,    19,     0,    62,    22,    20,
+       3,    14,    20,     3,     7,     8,    71,    10,    11,    12,
+      13,     3,    18,    19,     6,     7,     8,    18,    19,     3,
+      21,    13,    51,     7,     8,    61,    20,    11,     3,    13,
+      59,    60,     7,     8,    15,    16,    14,    66,    13,    18,
+      19,    15,    21,     5,    73,    18,    19,     3,    21,    17,
+      33,    34,    22,    35,    36,     4,     9,     4,    22,     4,
+      20,     7,     6,    73,     6,    -1,     9,     7
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -762,28 +765,31 @@ static const yytype_int8 yycheck[] =
 static const yytype_int8 yystos[] =
 {
        0,     5,    24,     3,     0,     3,     7,     8,    13,    25,
-      26,    14,     3,    20,    15,     6,    26,     3,     4,    20,
-      28,    29,    30,    14,    28,    22,     5,    17,    28,    18,
-      19,    15,    16,    28,    21,    28,     3,     4,    21,    28,
-      28,     3,    29,    29,    22,     9,     4,    25,    22,    25,
-      10,    11,    12,    27,     4,     6,    25,    20,    25,     7,
-      11,    28,     6,    21,     7,     9,    25,    27
+      26,    27,    28,    29,    31,    14,     3,    20,    15,     6,
+      26,     3,     4,    20,    36,    37,    38,    14,    36,    22,
+       5,    17,    36,    18,    19,    15,    16,    36,    21,    36,
+       3,     4,    21,     3,    37,    37,    38,    38,    22,     9,
+       4,    25,    22,    32,    10,    11,    12,    30,     4,    25,
+      25,    20,    34,    33,    11,    36,    25,     6,    21,    35,
+       7,     9,     6,    25,     7,    30
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    23,    24,    25,    25,    26,    26,    26,    26,    26,
-      27,    27,    27,    28,    28,    28,    28,    29,    29,    29,
-      30,    30,    30
+       0,    23,    24,    25,    25,    26,    26,    26,    26,    27,
+      28,    29,    30,    30,    30,    32,    33,    31,    34,    35,
+      31,    36,    36,    36,    36,    37,    37,    37,    38,    38,
+      38
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     6,     2,     1,     9,    11,     7,     4,     3,
-       1,     3,     7,     3,     3,     1,     3,     3,     3,     1,
-       1,     1,     3
+       0,     2,     6,     2,     1,     1,     1,     1,     1,     3,
+       4,     7,     1,     3,     7,     0,     0,    11,     0,     0,
+      13,     3,     3,     1,     3,     3,     3,     1,     1,     1,
+       3
 };
 
 
@@ -1246,8 +1252,208 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 2: /* program: PROGRAM ID stmts END PROGRAM ID  */
+#line 53 "bison2.y"
+    {
+        // Verificar que los IDs de inicio y fin coincidan
+        if (strcmp((yyvsp[-4].id), (yyvsp[0].id)) != 0) {
+            fprintf(stderr, "Error: El identificador del programa al inicio y al final no coinciden.\n");
+            exit(1);
+        }
+    }
+#line 1265 "y.tab.c"
+    break;
 
-#line 1251 "y.tab.c"
+  case 9: /* asigna_stmt: ID ASSIGN exp  */
+#line 79 "bison2.y"
+    {
+        printf("\tvalori %s\n", (yyvsp[-2].id));
+        printf("%s\n", (yyvsp[0].str));
+        printf("\tasigna\n");
+    }
+#line 1275 "y.tab.c"
+    break;
+
+  case 10: /* print_stmt: PRINT MULT COMMA exp  */
+#line 89 "bison2.y"
+    {
+        printf("%s\n\tprint\n", (yyvsp[0].str));
+    }
+#line 1283 "y.tab.c"
+    break;
+
+  case 11: /* if_stmt: IF LPAREN exp RPAREN THEN stmts elserep  */
+#line 97 "bison2.y"
+    {
+        char* falseLabel = newLabel();
+        char* endLabel = newLabel();
+        printf("%s\n\tsifalsovea %s\n", (yyvsp[-4].str), falseLabel);
+        printf("\tvea %s\n", endLabel);
+        printf("%s:\n", falseLabel);
+        // 'elserep' ya maneja las etiquetas adicionales
+        printf("\tvea %s\n", endLabel);
+    }
+#line 1297 "y.tab.c"
+    break;
+
+  case 15: /* $@1: %empty  */
+#line 119 "bison2.y"
+    {
+        /* Generación de etiquetas */
+        char* startLabel = newLabel();
+        char* endLabel = newLabel();
+
+        /* Asignación inicial */
+        printf("\tvalori %s\n", (yyvsp[-4].id));
+        printf("%s\n\tasigna\n", (yyvsp[-2].str));
+        printf("%s:\n", startLabel);
+        
+        /* Guardar etiquetas en variables globales para usarlas después de stmts */
+        strcpy(currentLabelStart, startLabel);
+        strcpy(currentLabelEnd, endLabel);
+    }
+#line 1316 "y.tab.c"
+    break;
+
+  case 16: /* $@2: %empty  */
+#line 134 "bison2.y"
+    {
+        /* Incremento por defecto (1) */
+        printf("\tvalori %s\n", (yyvsp[-6].id));
+        printf("\tvalord %s\n", (yyvsp[-6].id));
+        printf("\tmete 1\n\tsum\n\tasigna\n", (yyvsp[-6].id));
+        printf("\tvalord %s\n\tmete %d\n\tsub\n\tsiciertovea %s\n", (yyvsp[-6].id), (yyvsp[-4].str), currentLabelStart);
+        printf("%s:\n", currentLabelEnd);
+    }
+#line 1329 "y.tab.c"
+    break;
+
+  case 18: /* $@3: %empty  */
+#line 146 "bison2.y"
+    {
+        /* Generación de etiquetas */
+        char* startLabel = newLabel();
+        char* endLabel = newLabel();
+
+        /* Asignación inicial */
+        printf("\tvalori %s\n", (yyvsp[-6].id));
+        printf("%s\n\tasigna\n", (yyvsp[-4].str));
+        printf("%s:\n", startLabel);
+        
+        /* Guardar etiquetas en variables globales para usarlas después de stmts */
+        strcpy(currentLabelStart, startLabel);
+        strcpy(currentLabelEnd, endLabel);
+        strcpy(currentLabelStep, (yyvsp[-2].num));
+    }
+#line 1349 "y.tab.c"
+    break;
+
+  case 19: /* $@4: %empty  */
+#line 162 "bison2.y"
+    {
+        /* Incremento personalizado */
+        printf("\tvalori %s\n", (yyvsp[-8].id));
+        printf("\tvalord %s\n", (yyvsp[-8].id));
+        printf("\tmete %s\n\tsum\n\tasigna\n", currentLabelStep);
+        printf("\tvalord %s\n\tmete %d\n\tsub\n\tsiciertovea %s\n", (yyvsp[-8].id), (yyvsp[-6].str), currentLabelStart);
+        printf("%s:\n", currentLabelEnd);
+    }
+#line 1362 "y.tab.c"
+    break;
+
+  case 21: /* exp: exp SUM multexp  */
+#line 176 "bison2.y"
+    {
+        printf("%s\n%s\n\tsum\n", (yyvsp[-2].str), (yyvsp[0].str));
+        (yyval.str) = strdup("");
+    }
+#line 1371 "y.tab.c"
+    break;
+
+  case 22: /* exp: exp RESTA multexp  */
+#line 181 "bison2.y"
+    {
+        printf("%s\n%s\n\tsub\n", (yyvsp[-2].str), (yyvsp[0].str));
+        (yyval.str) = strdup("");
+    }
+#line 1380 "y.tab.c"
+    break;
+
+  case 23: /* exp: multexp  */
+#line 186 "bison2.y"
+    {
+        (yyval.str) = (yyvsp[0].str);
+    }
+#line 1388 "y.tab.c"
+    break;
+
+  case 24: /* exp: ID POW NUM  */
+#line 190 "bison2.y"
+    {
+        if ((yyvsp[0].num) == 2) {
+            printf("\tvalord %s\n\tvalord %s\n\tmult\n", (yyvsp[-2].id), (yyvsp[-2].id));
+        } else {
+            printf("\tvalord %s\n\tmete %d\n\tpow\n", (yyvsp[-2].id), (yyvsp[0].num));
+        }
+        (yyval.str) = strdup("");
+    }
+#line 1401 "y.tab.c"
+    break;
+
+  case 25: /* multexp: multexp MULT value  */
+#line 203 "bison2.y"
+    {
+        printf("%s\n%s\n\tmul\n", (yyvsp[-2].str), (yyvsp[0].str));
+        (yyval.str) = strdup("");
+    }
+#line 1410 "y.tab.c"
+    break;
+
+  case 26: /* multexp: multexp DIV value  */
+#line 208 "bison2.y"
+    {
+        printf("%s\n%s\n\tdiv\n", (yyvsp[-2].str), (yyvsp[0].str));
+        (yyval.str) = strdup("");
+    }
+#line 1419 "y.tab.c"
+    break;
+
+  case 27: /* multexp: value  */
+#line 213 "bison2.y"
+    {
+        (yyval.str) = (yyvsp[0].str);
+    }
+#line 1427 "y.tab.c"
+    break;
+
+  case 28: /* value: NUM  */
+#line 221 "bison2.y"
+    {
+        printf("\tmete %d\n", (yyvsp[0].num));
+        (yyval.str) = strdup("");
+    }
+#line 1436 "y.tab.c"
+    break;
+
+  case 29: /* value: ID  */
+#line 226 "bison2.y"
+    {
+        printf("\tvalord %s\n", (yyvsp[0].id));
+        (yyval.str) = strdup("");
+    }
+#line 1445 "y.tab.c"
+    break;
+
+  case 30: /* value: LPAREN exp RPAREN  */
+#line 231 "bison2.y"
+    {
+        (yyval.str) = (yyvsp[-1].str);
+    }
+#line 1453 "y.tab.c"
+    break;
+
+
+#line 1457 "y.tab.c"
 
       default: break;
     }
@@ -1440,17 +1646,20 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 106 "bison2.y"
+#line 236 "bison2.y"
 
 
-
-
-// Función para manejar errores
+/* Función para manejar errores */
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
 }
 
-// Función principal
+/* Variables globales para etiquetas */
+char currentLabelStart[20];
+char currentLabelEnd[20];
+char currentLabelStep[20];
+
+/* Función principal */
 int main(int argc, char** argv) {
     if(argc > 1) {
         FILE *file = fopen(argv[1], "r");

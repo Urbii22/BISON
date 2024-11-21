@@ -504,7 +504,7 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "flex2.l"
 #line 2 "flex2.l"
-#include "bison.tab.h"
+#include "y.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
