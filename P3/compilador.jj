@@ -1,0 +1,269 @@
+options {
+    IGNORE_CASE = true;
+}
+
+
+PARSER_BEGIN(Compilador)
+
+import java.io.*;
+
+public class Compilador {
+    static int labelCount = 0;
+
+    public static void main(String[] args) throws ParseException, FileNotFoundException {
+        Compilador parser;
+        if (args.length > 0) {
+            FileInputStream fis = new FileInputStream(args[0]);
+            parser = new Compilador(fis);
+        } else {
+            parser = new Compilador(System.in);
+        }
+        parser.program();
+    }
+
+    static String newLabel() {
+        return "LBL" + (labelCount++);
+    }
+}
+
+PARSER_END(Compilador)
+
+/* Ignorar espacios en blanco y comentarios de lín ea */
+SKIP : {
+     " " | "\t" | "\n" | "\r" | <"!"(~["\r","\n"])*("\r")?("\n")?>
+}
+
+TOKEN : {
+    < PROGRAM : ("p"|"P") ("r"|"R") ("o"|"O") ("g"|"G") ("r"|"R") ("a"|"A") ("m"|"M") >
+|   < ENDIF : ("e"|"E") ("n"|"N") ("d"|"D") ("i"|"I") ("f"|"F") >
+|   < END : ("e"|"E") ("n"|"N") ("d"|"D") >
+|   < DO : ("d"|"D") ("o"|"O") >
+|   < IF : ("i"|"I") ("f"|"F") >
+|   < THEN : ("t"|"T") ("h"|"H") ("e"|"E") ("n"|"N") >
+|   < ELSE : ("e"|"E") ("l"|"L") ("s"|"S") ("e"|"E") >
+|   < ELSEIF : ("e"|"E") ("l"|"L") ("s"|"S") ("e"|"E") ("i"|"I") ("f"|"F") >
+|   < PRINT : ("p"|"P") ("r"|"R") ("i"|"I") ("n"|"N") ("t"|"T") >
+|   /* Operadores y símbolos */
+    < ASSIGN : "=" >
+|   < COMMA : "," >
+|   < LPAREN : "(" >
+|   < RPAREN : ")" >
+|   < PLUS : "+" >
+|   < MINUS : "-" >
+|   < MULT : "*" >
+|   < DIV : "/" >
+|   < POW : "**" >
+|   /* Números */
+    < NUM : (["0"-"9"])+ >
+|   /* Identificadores */
+    < ID : (["a"-"z","A"-"Z"]) (["a"-"z","A"-"Z","0"-"9","_"]){0,30} >
+}
+
+MORE: // Ignorar comentarios multilínea
+{
+    <StartCOM: "<!"> :  COM
+}
+<COM>SKIP:
+{
+    <EndCom: "!>"> : DEFAULT | < ~[]>
+}
+
+void program() :
+{
+    Token id1, id2;
+}
+{
+    <PROGRAM> id1=<ID> stmts() <END> <PROGRAM> id2=<ID> {
+        if (!id1.image.equalsIgnoreCase(id2.image)) {
+            System.err.println("Error: Los identificadores del programa no coinciden.");
+            System.exit(1);
+        }
+    }
+}
+
+void stmts() :
+{}
+{
+    ( stmt() )*
+}
+
+void stmt() :
+{
+    Token id;
+    String code, initExp, limitExp, stepExp = null;
+    String labelStart, labelEnd, elseLabel, endLabel;
+}
+{
+    /* Bucle DO con o sin paso */
+    (
+        <DO> id=<ID> <ASSIGN> initExp=exp() <COMMA> limitExp=exp() ( <COMMA> stepExp=exp() )? {
+            // Inicialización de la variable de control
+            System.out.println("\t" + "valori " + id.image);
+            System.out.println("\t" + initExp);
+            System.out.println("\t" + "asigna");
+            labelStart = Compilador.newLabel();
+            labelEnd = Compilador.newLabel();
+            // Etiqueta de inicio del bucle
+            System.out.println(labelStart);
+        }
+        stmts()
+        {
+            // Incremento de la variable de control
+            System.out.println("\t" + "valori " + id.image);
+            System.out.println("\t" + "valord " + id.image);
+            if (stepExp != null) {
+                System.out.println("\t" + stepExp);
+            } else {
+                System.out.println("\t" + "mete 1");
+            }
+            System.out.println("\t" + "sum");
+            System.out.println("\t" + "asigna");
+            // Comparación de la variable de control con el límite
+            System.out.println("\t" + "valord " + id.image);
+            System.out.println("\t" + limitExp);
+            System.out.println("\t" + "sub"); // Calculamos x - limit
+            // Si x <= limit, continuamos el bucle
+            System.out.println("\t" + "siciertovea " + labelStart);
+            // Etiqueta de fin del bucle
+            System.out.println(labelEnd);
+        }
+        <END> <DO>
+    )
+|
+    /* Condicional IF */
+    (
+        <IF> <LPAREN> code=exp() <RPAREN> <THEN> {
+            elseLabel = Compilador.newLabel();
+            endLabel = Compilador.newLabel();
+            System.out.println(code);
+            System.out.println("\t" + "sifalsovea " + elseLabel);
+            stmts();
+            System.out.println("\t" + "vea " + endLabel);
+            System.out.println(elseLabel);
+            elserep(elseLabel, endLabel);
+            System.out.println(endLabel);
+        }
+    )
+|
+    /* Sentencia PRINT */
+    (
+        <PRINT> <MULT> <COMMA> code=exp() {
+            System.out.println("\t" + code);
+            System.out.println("\t" + "print");
+        }
+    )
+|
+    /* Asignación */
+    (
+        id=<ID> <ASSIGN> code=exp() {
+            System.out.println("\t" + "valori " + id.image);
+            System.out.println("\t" + code);
+            System.out.println("\t" + "asigna");
+        }
+    )
+}
+
+void elserep(String elseLabel, String endLabel) :
+{
+    String code;
+    String newElseLabel;
+}
+{
+    ( <ENDIF> | <END> <IF> ) {
+        // Nada que hacer
+    }
+|
+    <ELSE> {
+        stmts();
+    }
+    ( <ENDIF> | <END> <IF> ) {
+        // Nada que hacer
+    }
+|
+    <ELSEIF> <LPAREN> code=exp() <RPAREN> <THEN> {
+        newElseLabel = Compilador.newLabel();
+        System.out.println(code);
+        System.out.println("\t" + "sifalsovea " + newElseLabel);
+        stmts();
+        System.out.println("\t" + "vea " + endLabel);
+        System.out.println(newElseLabel);
+        elserep(newElseLabel, endLabel);
+    }
+}
+
+String exp() :
+{
+    String code, termCode, termCode2;
+}
+{
+    termCode=term() (
+        <PLUS> termCode2=term() {
+            code = termCode + "\n" + termCode2 + "\n" + "sum";
+            termCode = code;
+        }
+    |
+        <MINUS> termCode2=term() {
+            code = termCode + "\n" + termCode2 + "\n" + "sub";
+            termCode = code;
+        }
+    )*
+    { return termCode; }
+}
+
+String term() :
+{
+    String code, factorCode, factorCode2;
+}
+{
+    factorCode=factor() (
+        <MULT> factorCode2=factor() {
+            code = factorCode + "\n" + "\t" + factorCode2 + "\n" + "\t" + "mul";
+            factorCode = code;
+        }
+    |
+        <DIV> factorCode2=factor() {
+            code = factorCode + "\n" + "\t" + factorCode2 + "\n" + "div";
+            factorCode = code;
+        }
+    )*
+    { return factorCode; }
+}
+
+String factor() :
+{
+    String code, baseCode;
+    Token exponentToken;
+}
+{
+    baseCode=base() (
+        <POW> exponentToken=<NUM> {
+            if (exponentToken.image.equals("2")) {
+                code = baseCode + "\n" + baseCode + "\n" + "\t" + "mul";
+            } else {
+                code = baseCode + "\n" +"mete " + exponentToken.image + "\n" + "pow";
+            }
+            baseCode = code;
+        }
+    )?
+    { return baseCode; }
+}
+
+String base() :
+{
+    Token num, id;
+    String code;
+}
+{
+    (
+        num=<NUM> {
+            code = "mete " + num.image;
+        }
+    |
+        id=<ID> {
+            code = "\t" + "valord " + id.image;
+        }
+    |
+        <LPAREN> code=exp() <RPAREN>
+    )
+    { return code; }
+}
