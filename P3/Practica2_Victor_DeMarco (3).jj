@@ -1,0 +1,277 @@
+/*
+Autor: Victor De Marco Velasco
+Descripcion: Este codigo se trata de un minicompilador diseñado a traves de javacc.
+             Utiliza analasis descendete para transformar un lenguaje de alto nivel a codigo maquina de pila abstracta.
+Fecha: 8/11/24
+
+*/
+
+PARSER_BEGIN(P02)
+
+import java.io.*;
+
+public class P02 {
+    //Variable estatica que lleva la cuenta de las etiquetas utilizadas durante la ejecución del código
+    static int labelCount = 0;
+    public static void main(String[] args) throws ParseException, FileNotFoundException {
+        P02 parser;
+        if (args.length > 0) {
+            FileInputStream fichero = new FileInputStream(args[0]);
+            parser = new P02(fichero);
+        } else {
+            parser = new P02(System.in);
+        }
+        parser.program();
+    }
+}
+
+PARSER_END(P02)
+
+
+// Tokens que quiero ignorar 
+SKIP : {
+    // Ignorar espacios, tabuladores , saltos de línea y retornos de carro
+    " " | "\t" | "\n" | "\r" |
+    // Comentario de una sola línea con "!"
+    < "!" (~["\r", "\n"])* ("\r")? ("\n")? > |
+    // Comentario multilínea que empieza con "<!" y termina con "!>"
+    < "<!" (~["<", "!", ">"])* "!>" >
+}
+
+
+//Los Tokens de mi codigo necesarios para entender la sintaxis del lenguaje que se busca pasar a pila abstracta
+TOKEN : {
+    < PROGRAM: "program" >
+  | < END: "end" >
+  | < DO: "do" >
+  | < IF: "if" >
+  | < ELSE: "else" >
+  | < ELSEIF: "elseif" >
+  | < THEN: "then" >
+  | < ENDIF: "endif" >
+  | < PRINT: "print" >
+  | < NUM: (["0"-"9"])+ >
+  | < ID: <LETTER> (<LETTER> | ["0"-"9"] | "_")* > { if (image.length() > 31) throw new Error("Identifier too long"); } //Lanzamos un error si encontramos un ID con mas de 31 caracteres
+  | < MUL: "*" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < DIV: "/" >
+  | < POWER: "**" >
+  | < EQ: "=" >
+  | < COMMA: "," >
+  | < LPAREN: "(" >
+  | < RPAREN: ")" >
+}
+
+TOKEN : {
+    < #LETTER: ["a"-"z", "A"-"Z"] >
+}
+
+void program() : {
+}
+{
+    <PROGRAM> <ID> stmts() <END> <PROGRAM> <ID> 
+}
+
+void stmts() : {
+}
+{
+    (stmt())+
+}
+
+
+void stmt() : {
+}
+{
+    asigna_stmt()
+  | do_stmt()
+  | if_stmt()
+  | print_stmt()
+}
+
+/*Metodo encargado de procesar el unico tipo de bucle de nuestra sintaxis (do).
+  Dicho bucle se puede encontrar expresado de dos formas distintas, con el incremento indicado o sin el.
+  Si esta indicado la variable incrementara segun corresponda y si no la variable aumentara de uno en uno.
+*/
+void do_stmt() : {
+    Token id, end, step = null;
+    String start;
+    boolean hasStep = false;
+    String startLabel = "LBL" + labelCount++;
+}
+{
+    <DO> id=<ID> <EQ> start=exp() <COMMA> end=<NUM> 
+    ( <COMMA> step=<NUM> { hasStep = true; } )?
+
+    {
+        // Asignación inicial de la variable de control del bucle
+        System.out.println("\tvalori " + id.image);
+        System.out.println(start);
+        System.out.println("\tasigna");
+
+        // Etiqueta para el inicio del bucle
+        System.out.println(startLabel);
+    }
+
+    stmts() 
+
+    {
+        // Incremento de la variable de control del bucle
+        System.out.println("\tvalori " + id.image);
+        System.out.println("\tvalord " + id.image);
+
+        if (hasStep) {
+            // Si hay valor de incremento definido, usar el valor de `step`
+            System.out.println("\tmete " + step.image);
+        } else {
+            // Si no hay valor definido, incrementar de 1 en 1
+            System.out.println("\tmete 1");
+        }
+        System.out.println("\tsum");
+        System.out.println("\tasigna");
+
+        // Evaluación de la condición del bucle
+        System.out.println("\tvalord " + id.image);
+        System.out.println("\tmete " + end.image);
+        System.out.println("\t" + "sub");
+        System.out.println("\tsiciertovea " + startLabel);
+    }
+    
+    <END> <DO>
+}
+
+
+
+
+//Metodo encargado de procesar el condicional IF 
+void if_stmt() : {
+    String texto;
+    String falseLabel = "LBL" + labelCount++;
+    String endLabel = "LBL" + labelCount++;
+}
+{
+    <IF> <LPAREN> texto=exp() <RPAREN> <THEN> {
+            //Evaluacion de la condicion del IF
+            System.out.println(texto);
+            System.out.println("\t" + "sifalsovea " + falseLabel);
+            //Expresion que se ejecutara si se cumple la condicion
+            stmts();
+            System.out.println("\t" + "vea " + endLabel);
+            System.out.println(falseLabel);
+            elserep(falseLabel, endLabel);
+            System.out.println(endLabel);
+        }
+}
+
+
+
+void print_stmt() : {
+    String texto;
+}
+{
+    <PRINT> <MUL> <COMMA> texto=exp() {
+            System.out.println(texto+"\n"+"\t" + "print");
+        }
+}
+
+void asigna_stmt() : {
+    String texto;
+    Token id;
+}
+{
+    id=<ID> <EQ> texto=exp() {
+            System.out.println("\t"+ "valori " + id.image + "\n"+texto + "\n"+"\t" + "asigna");
+        }
+}
+
+/*Metodo encargado de finalizar el condicional IF
+  IF puede finalizar de tres formas diferentes:
+      -Finaliza sin que prosiga nada mas
+      -Despues del IF aparece un else con el codigo a ejecutarse si no se cumple la condcion del IF
+      -Despues del IF aparece un elseif y entoneces habra que volver a evaluar la condicion como si se tratara de un nuevo IF ademas de crear una etiqueta nueva.
+*/
+void elserep(String falseLabel, String endLabel) : {
+    String texto;
+}
+{
+    <ENDIF>
+   
+  | <ELSE> stmts() <ENDIF>
+    
+  | <ELSEIF> <LPAREN> texto=exp() <RPAREN> <THEN>
+    {
+        falseLabel = "LBL" + labelCount++ ;
+        System.out.println(texto);
+        System.out.println("\t" + "sifalsovea " + falseLabel);
+        stmts();
+        System.out.println("\t" + "vea " + endLabel);
+        System.out.println(falseLabel);
+        elserep(falseLabel, endLabel);
+    }
+}
+
+//Metodo que evalua las expresiones de suma y resta
+String exp() : {
+    Token operador;
+    String texto,mult_texto;
+}
+{
+    texto=multexp() ( (operador=<PLUS> | operador=<MINUS>) mult_texto=multexp() { 
+        if(operador.image.equals("+"))
+        texto=texto+"\n"+mult_texto+"\n"+"\t"+"sum";
+        else
+        texto=texto+"\n"+mult_texto+"\n"+"\t"+"sub";
+    } 
+    )*
+     { return texto; }
+}
+
+//Metodo que evalua las expresiones de multiplicacion y division 
+String multexp() : {
+    Token operador;
+    String texto,valor_texto;
+}
+{
+    texto=value() ( (operador=<MUL> | operador=<DIV>) valor_texto=value() {
+        if(operador.image.equals("*"))
+        texto=texto+"\n"+valor_texto+"\n"+"\t"+"mul";
+        else
+        texto=texto+"\n"+valor_texto+"\n"+"\t"+"div";
+        } 
+        )*
+    { return texto; }
+}
+
+/*Metodo que determina si una expresion es un valor , un identificador o una expresion entre parentesis.
+    Si es un valor numerico devuelve "mete x" donde x es ese valor.
+    Si es un identificador devuelve "valord i" donde i es el identificador, a no ser que dicho identificador tenga una potencia en cuyo caso devolvera,
+    "valord i valord i mult" si el valor de la potencia es 2 
+    "valord i mete x pow" donde x es el valor de la potencia
+    Si es una expresion entre parentesis devolvera lo que devuelva el metodo exp()
+*/
+String value() : {
+    Token num, id;
+    String texto=null;
+    Boolean potencia = false;
+}
+{
+   ( num=<NUM> {texto="\t"+"mete"+" "+num.image;}
+  | id=<ID> (<POWER> num=<NUM> 
+     {
+     potencia=true;
+     if(num.image.equals("2"))
+     texto = "\t"+"valord"+" "+id.image +"\n"+ "\t"+"valord"+" "+id.image +  "\n" + "\t" + "mult";
+     else
+     texto = "\t"+"valord"+" "+id.image+ "\n"+"\t" +"mete " + num.image +"\n"+"\t" + "pow";
+     }
+    )? 
+    {
+    if(potencia==false)
+    texto = "\t"+"valord"+" "+id.image;
+    }
+  | <LPAREN> texto=exp() <RPAREN> 
+   )
+  { return texto; }
+}
+
+
