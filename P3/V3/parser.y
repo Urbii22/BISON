@@ -3,235 +3,210 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Definición de yylex
-int yylex(void);
+int yylex();
 void yyerror(const char *s);
 
-// Contador de etiquetas
 int labelCount = 0;
 
-// Definición de YYSTYPE
-typedef struct {
-    int num;
-    char* id;
-    char* code;
-} YYSTYPE;
-
-#define YYSTYPE YYSTYPE
 %}
 
 %union {
-    int num;
-    char* id;
-    char* code;
+    int intval;
+    char *strval;
+    char *code;
 }
 
-%token PROGRAM END DO IF ELSE ELSEIF THEN ENDIF PRINT
-%token NUM ID
-%token MUL DIV PLUS MINUS POWER
-%token EQ COMMA LPAREN RPAREN
+%token <strval> ID
+%token <intval> NUM
+
+%token PROGRAM END DO IF ELSE ELSEIF THEN ENDIF PRINT MUL PLUS MINUS DIV POWER EQ COMMA LPAREN RPAREN
 
 %left PLUS MINUS
 %left MUL DIV
 %right POWER
-%nonassoc LOWER_THAN_ELSE
 
-%start program
+%type <code> program stmts stmt elserep exp multexp value
 
 %%
 
 program:
     PROGRAM ID stmts END PROGRAM ID
-    {
-        // Verificar que los nombres de programa coincidan
-        if (strcmp($2, $6) != 0) {
-            fprintf(stderr, "Error: El nombre del programa al inicio y al final no coinciden.\n");
-            exit(1);
+        {
+            printf("%s\n", $3);
         }
-    }
     ;
 
 stmts:
     stmts stmt
-    | stmt
+        {
+            asprintf(&$$, "%s\n%s", $1, $2);
+        }
+    |
+    stmt
+        {
+            $$ = $1;
+        }
     ;
 
 stmt:
-    do_stmt
-    | if_stmt
-    | print_stmt
-    | asigna_stmt
-    ;
+    DO ID EQ exp COMMA NUM stmts END DO
+        {
+            char *startLabel;
+            asprintf(&startLabel, "LBL%d", labelCount++);
 
-do_stmt:
-    DO ID EQ expr COMMA NUM opt_step stmts END DO
-    {
-        // Asignación inicial de la variable de control
-        printf("\tvalori %s\n", $2);
-        printf("%s\n", $4);
-        printf("\tasigna\n");
+            char *initCode;
+            asprintf(&initCode, "\tvalori %s\n%s\n\tasigna", $2, $4);
 
-        // Etiqueta para el inicio del bucle
-        char startLabel[20];
-        sprintf(startLabel, "LBL%d", labelCount++);
-        printf("%s\n", startLabel);
+            char *conditionCode;
+            asprintf(&conditionCode, "\tvalord %s\n\tmete %d\n\tsub\n\tsiciertovea %s", $2, $6, startLabel);
 
-        // Cuerpo del bucle
-        // Ya impreso a través de 'stmts'
+            char *incrementCode;
+            asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete 1\n\tsum\n\tasigna", $2, $2);
 
-        // Incremento de la variable de control
-        printf("\tvalord %s\n", $2);
-        if ($6.hasStep) {
-            printf("\tmete %d\n", $6.step);
-        } else {
-            printf("\tmete 1\n");
+            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, $7, incrementCode, conditionCode);
         }
-        printf("\tsum\n");
-        printf("\tasigna\n");
-
-        // Evaluación de la condición del bucle
-        printf("\tvalord %s\n", $2);
-        printf("\tmete %d\n", $5);
-        printf("\tsub\n");
-
-        // Salto condicional
-        char endLabel[20];
-        sprintf(endLabel, "LBL%d", labelCount++);
-        printf("\tsiciertovea %s\n", endLabel);
-
-        // Salto al inicio del bucle
-        printf("\tvea %s\n", startLabel);
-
-        // Etiqueta de fin del bucle
-        printf("%s\n", endLabel);
-    }
-    ;
-
-opt_step:
-    COMMA NUM
-    {
-        $$ .hasStep = 1;
-        $$ .step = $2;
-    }
     |
-    /* vacío */
-    {
-        $$ .hasStep = 0;
-        $$ .step = 0;
-    }
-    ;
+    DO ID EQ exp COMMA NUM COMMA NUM stmts END DO
+        {
+            char *startLabel;
+            asprintf(&startLabel, "LBL%d", labelCount++);
 
-if_stmt:
-    IF LPAREN expr RPAREN THEN stmts elserep ENDIF
+            char *initCode;
+            asprintf(&initCode, "\tvalori %s\n%s\n\tasigna", $2, $4);
+
+            char *conditionCode;
+            asprintf(&conditionCode, "\tvalord %s\n\tmete %d\n\tsub\n\tsiciertovea %s", $2, $6, startLabel);
+
+            char *incrementCode;
+            asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete %d\n\tsum\n\tasigna", $2, $2, $8);
+
+            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, $9, incrementCode, conditionCode);
+        }
+    |
+    IF LPAREN exp RPAREN THEN stmts elserep
+        {
+            char *falseLabel;
+            char *endLabel;
+            asprintf(&falseLabel, "LBL%d", labelCount++);
+            asprintf(&endLabel, "LBL%d", labelCount++);
+
+            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", $3, falseLabel, $6, endLabel, falseLabel, $7, endLabel);
+        }
+    |
+    PRINT MUL COMMA exp
+        {
+            asprintf(&$$, "%s\n\tprint", $4);
+        }
+    |
+    ID EQ exp
+        {
+            asprintf(&$$, "\tvalori %s\n%s\n\tasigna", $1, $3);
+        }
     ;
 
 elserep:
-    ELSE stmts
-    | ELSEIF LPAREN expr RPAREN THEN stmts elserep
+    ENDIF
+        {
+            $$ = strdup("");
+        }
     |
-    /* vacío */
+    ELSE stmts ENDIF
+        {
+            $$ = $2;
+        }
+    |
+    ELSEIF LPAREN exp RPAREN THEN stmts elserep
+        {
+            char *falseLabel;
+            char *endLabel;
+            asprintf(&falseLabel, "LBL%d", labelCount++);
+            asprintf(&endLabel, "LBL%d", labelCount++);
+
+            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", $3, falseLabel, $6, endLabel, falseLabel, $7, endLabel);
+        }
     ;
 
-print_stmt:
-    PRINT MUL COMMA expr
-    {
-        printf("%s\n", $4);
-        printf("\tprint\n");
-    }
-    ;
-
-asigna_stmt:
-    ID EQ expr
-    {
-        printf("\tvalori %s\n", $1);
-        printf("%s\n", $3);
-        printf("\tasigna\n");
-    }
-    ;
-
-expr:
-    expr PLUS term
-    {
-        $$ = malloc(strlen($1) + strlen($3) + 10);
-        sprintf($$, "%s\n%s\n\t%s", $1, $3, "sum");
-    }
-    | expr MINUS term
-    {
-        $$ = malloc(strlen($1) + strlen($3) + 10);
-        sprintf($$, "%s\n%s\n\t%s", $1, $3, "sub");
-    }
-    | term
-    {
-        $$ = $1;
-    }
-    ;
-
-term:
-    term MUL factor
-    {
-        $$ = malloc(strlen($1) + strlen($3) + 10);
-        sprintf($$, "%s\n%s\n\t%s", $1, $3, "mul");
-    }
-    | term DIV factor
-    {
-        $$ = malloc(strlen($1) + strlen($3) + 10);
-        sprintf($$, "%s\n%s\n\t%s", $1, $3, "div");
-    }
-    | factor
-    {
-        $$ = $1;
-    }
-    ;
-
-factor:
+exp:
+    exp PLUS multexp
+        {
+            asprintf(&$$, "%s\n%s\n\tsum", $1, $3);
+        }
+    |
+    exp MINUS multexp
+        {
+            asprintf(&$$, "%s\n%s\n\tsub", $1, $3);
+        }
+    |
+    multexp
+        {
+            $$ = $1;
+        }
+    |
     ID POWER NUM
-    {
-        if ($3 == 2) {
-            // Potencia de 2
-            $$ = malloc(strlen($1)*2 + 20);
-            sprintf($$, "\tvalord %s\n\tvalord %s\n\tmult", $1, $1);
+        {
+            if ($3 == 2)
+            {
+                asprintf(&$$, "\tvalord %s\n\tvalord %s\n\tmul", $1, $1);
+            }
+            else
+            {
+                asprintf(&$$, "\tvalord %s\n\tmete %d\n\tpow", $1, $3);
+            }
         }
-        else {
-            // Potencia general
-            $$ = malloc(strlen($1) + 20);
-            sprintf($$, "\tvalord %s\n\tmete %d\n\tpow", $1, $3);
+    ;
+
+multexp:
+    multexp MUL value
+        {
+            asprintf(&$$, "%s\n%s\n\tmul", $1, $3);
         }
-    }
-    | ID
-    {
-        char* code = malloc(strlen($1) + 20);
-        sprintf(code, "\tvalord %s", $1);
-        $$ = code;
-    }
-    | NUM
-    {
-        char* code = malloc(50);
-        sprintf(code, "\tmete %d", $1);
-        $$ = code;
-    }
-    | LPAREN expr RPAREN
-    {
-        $$ = $2;
-    }
+    |
+    multexp DIV value
+        {
+            asprintf(&$$, "%s\n%s\n\tdiv", $1, $3);
+        }
+    |
+    value
+        {
+            $$ = $1;
+        }
+    ;
+
+value:
+    NUM
+        {
+            asprintf(&$$, "\tmete %d", $1);
+        }
+    |
+    ID
+        {
+            asprintf(&$$, "\tvalord %s", $1);
+        }
+    |
+    LPAREN exp RPAREN
+        {
+            $$ = $2;
+        }
     ;
 
 %%
 
-#include "lex.yy.c"
-
-void yyerror(const char *s) {
+void yyerror(const char *s)
+{
     fprintf(stderr, "Error: %s\n", s);
-    exit(1);
 }
 
-int main(int argc, char** argv) {
-    if (argc > 1) {
-        FILE* file = fopen(argv[1], "r");
-        if (!file) {
-            perror("No se pudo abrir el archivo");
+int main(int argc, char **argv)
+{
+    if (argc > 1)
+    {
+        extern FILE *yyin;
+        yyin = fopen(argv[1], "r");
+        if (!yyin)
+        {
+            perror(argv[1]);
             return 1;
         }
-        yyin = file;
     }
     yyparse();
     return 0;

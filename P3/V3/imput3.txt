@@ -1,0 +1,13 @@
+<! Ejemplo de un bucle anidado:
+   - El primero inicializa var5 a 10 y en pasos de 5 llega a 100
+   - El segundo inicializa inner a 1  en pasos de 1 llega a 55
+!>
+program Ej3
+    do var5 = 10 , 100 , 5
+        print *, var5
+        do inner = 0+1, 55
+            print *, inner / 2
+        end do
+        res = 6 * 1 + 5
+    end do
+end program Ej3
