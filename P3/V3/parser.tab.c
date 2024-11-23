@@ -77,9 +77,10 @@ int yylex();
 void yyerror(const char *s);
 
 int labelCount = 0;
+char *endLabel; // Variable global para la etiqueta final
 
 
-#line 83 "parser.tab.c"
+#line 84 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -525,9 +526,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    33,    33,    40,    45,    52,    69,    86,    96,   101,
-     108,   113,   118,   130,   135,   140,   145,   159,   164,   169,
-     176,   181,   186
+       0,    34,    34,    41,    46,    53,    64,    81,    98,   103,
+     110,   115,   120,   132,   137,   142,   147,   161,   166,   171,
+     178,   183,   188
 };
 #endif
 
@@ -590,8 +591,8 @@ static const yytype_int8 yydefact[] =
        9,    15,    19,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     8,     2,    16,    22,    21,
       13,    14,    17,    18,     0,     0,     0,     0,     0,     0,
-       0,     0,    10,     7,     0,     0,     0,     0,     0,     5,
-      11,     0,     0,     0,     6,     0,     0,    12
+       0,     0,    10,     5,     0,     0,     0,     0,     0,     6,
+      11,     0,     0,     0,     7,     0,     0,    12
 };
 
 /* YYPGOTO[NTERM-NUM].  */
@@ -661,7 +662,7 @@ static const yytype_int8 yyr1[] =
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     6,     2,     1,     9,    11,     7,     4,     3,
+       0,     2,     6,     2,     1,     7,     9,    11,     4,     3,
        1,     3,     7,     3,     3,     1,     3,     3,     3,     1,
        1,     1,     3
 };
@@ -1127,31 +1128,45 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: PROGRAM ID stmts END PROGRAM ID  */
-#line 34 "parser.y"
+#line 35 "parser.y"
         {
             printf("%s\n", (yyvsp[-3].code));
         }
-#line 1135 "parser.tab.c"
+#line 1136 "parser.tab.c"
     break;
 
   case 3: /* stmts: stmts stmt  */
-#line 41 "parser.y"
+#line 42 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n%s", (yyvsp[-1].code), (yyvsp[0].code));
         }
-#line 1143 "parser.tab.c"
+#line 1144 "parser.tab.c"
     break;
 
   case 4: /* stmts: stmt  */
-#line 46 "parser.y"
+#line 47 "parser.y"
         {
             (yyval.code) = (yyvsp[0].code);
         }
-#line 1151 "parser.tab.c"
+#line 1152 "parser.tab.c"
     break;
 
-  case 5: /* stmt: DO ID EQ exp COMMA NUM stmts END DO  */
-#line 53 "parser.y"
+  case 5: /* stmt: IF LPAREN exp RPAREN THEN stmts elserep  */
+#line 54 "parser.y"
+        {
+            // Generar etiquetas en el orden deseado
+            asprintf(&endLabel, "LBL%d", labelCount++);
+            char *falseLabel;
+            asprintf(&falseLabel, "LBL%d", labelCount++);
+
+            asprintf(&(yyval.code), "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:",
+                (yyvsp[-4].code), falseLabel, (yyvsp[-1].code), endLabel, falseLabel, (yyvsp[0].code), endLabel);
+        }
+#line 1166 "parser.tab.c"
+    break;
+
+  case 6: /* stmt: DO ID EQ exp COMMA NUM stmts END DO  */
+#line 65 "parser.y"
         {
             char *startLabel;
             asprintf(&startLabel, "LBL%d", labelCount++);
@@ -1165,13 +1180,13 @@ yyreduce:
             char *incrementCode;
             asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete 1\n\tsum\n\tasigna", (yyvsp[-7].strval), (yyvsp[-7].strval));
 
-            asprintf(&(yyval.code), "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, (yyvsp[-2].code), incrementCode, conditionCode);
+            asprintf(&(yyval.code), "%s\n%s:\n%s\n%s\n%s", initCode, startLabel, (yyvsp[-2].code), incrementCode, conditionCode);
         }
-#line 1171 "parser.tab.c"
+#line 1186 "parser.tab.c"
     break;
 
-  case 6: /* stmt: DO ID EQ exp COMMA NUM COMMA NUM stmts END DO  */
-#line 70 "parser.y"
+  case 7: /* stmt: DO ID EQ exp COMMA NUM COMMA NUM stmts END DO  */
+#line 82 "parser.y"
         {
             char *startLabel;
             asprintf(&startLabel, "LBL%d", labelCount++);
@@ -1185,95 +1200,82 @@ yyreduce:
             char *incrementCode;
             asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete %d\n\tsum\n\tasigna", (yyvsp[-9].strval), (yyvsp[-9].strval), (yyvsp[-3].intval));
 
-            asprintf(&(yyval.code), "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, (yyvsp[-2].code), incrementCode, conditionCode);
+            asprintf(&(yyval.code), "%s\n%s:\n%s\n%s\n%s", initCode, startLabel, (yyvsp[-2].code), incrementCode, conditionCode);
         }
-#line 1191 "parser.tab.c"
-    break;
-
-  case 7: /* stmt: IF LPAREN exp RPAREN THEN stmts elserep  */
-#line 87 "parser.y"
-        {
-            char *falseLabel;
-            char *endLabel;
-            asprintf(&falseLabel, "LBL%d", labelCount++);
-            asprintf(&endLabel, "LBL%d", labelCount++);
-
-            asprintf(&(yyval.code), "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", (yyvsp[-4].code), falseLabel, (yyvsp[-1].code), endLabel, falseLabel, (yyvsp[0].code), endLabel);
-        }
-#line 1204 "parser.tab.c"
+#line 1206 "parser.tab.c"
     break;
 
   case 8: /* stmt: PRINT MUL COMMA exp  */
-#line 97 "parser.y"
+#line 99 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n\tprint", (yyvsp[0].code));
         }
-#line 1212 "parser.tab.c"
+#line 1214 "parser.tab.c"
     break;
 
   case 9: /* stmt: ID EQ exp  */
-#line 102 "parser.y"
+#line 104 "parser.y"
         {
             asprintf(&(yyval.code), "\tvalori %s\n%s\n\tasigna", (yyvsp[-2].strval), (yyvsp[0].code));
         }
-#line 1220 "parser.tab.c"
+#line 1222 "parser.tab.c"
     break;
 
   case 10: /* elserep: ENDIF  */
-#line 109 "parser.y"
+#line 111 "parser.y"
         {
             (yyval.code) = strdup("");
         }
-#line 1228 "parser.tab.c"
+#line 1230 "parser.tab.c"
     break;
 
   case 11: /* elserep: ELSE stmts ENDIF  */
-#line 114 "parser.y"
+#line 116 "parser.y"
         {
             (yyval.code) = (yyvsp[-1].code);
         }
-#line 1236 "parser.tab.c"
+#line 1238 "parser.tab.c"
     break;
 
   case 12: /* elserep: ELSEIF LPAREN exp RPAREN THEN stmts elserep  */
-#line 119 "parser.y"
+#line 121 "parser.y"
         {
             char *falseLabel;
-            char *endLabel;
             asprintf(&falseLabel, "LBL%d", labelCount++);
-            asprintf(&endLabel, "LBL%d", labelCount++);
-
-            asprintf(&(yyval.code), "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", (yyvsp[-4].code), falseLabel, (yyvsp[-1].code), endLabel, falseLabel, (yyvsp[0].code), endLabel);
+            asprintf(&endLabel, "LBL%d", labelCount);
+            // Construir el código para el elseif
+            asprintf(&(yyval.code), "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s",
+                (yyvsp[-4].code), falseLabel, (yyvsp[-1].code), endLabel, falseLabel, (yyvsp[0].code));
         }
-#line 1249 "parser.tab.c"
+#line 1251 "parser.tab.c"
     break;
 
   case 13: /* exp: exp PLUS multexp  */
-#line 131 "parser.y"
+#line 133 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n%s\n\tsum", (yyvsp[-2].code), (yyvsp[0].code));
         }
-#line 1257 "parser.tab.c"
+#line 1259 "parser.tab.c"
     break;
 
   case 14: /* exp: exp MINUS multexp  */
-#line 136 "parser.y"
+#line 138 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n%s\n\tsub", (yyvsp[-2].code), (yyvsp[0].code));
         }
-#line 1265 "parser.tab.c"
+#line 1267 "parser.tab.c"
     break;
 
   case 15: /* exp: multexp  */
-#line 141 "parser.y"
+#line 143 "parser.y"
         {
             (yyval.code) = (yyvsp[0].code);
         }
-#line 1273 "parser.tab.c"
+#line 1275 "parser.tab.c"
     break;
 
   case 16: /* exp: ID POWER NUM  */
-#line 146 "parser.y"
+#line 148 "parser.y"
         {
             if ((yyvsp[0].intval) == 2)
             {
@@ -1284,59 +1286,59 @@ yyreduce:
                 asprintf(&(yyval.code), "\tvalord %s\n\tmete %d\n\tpow", (yyvsp[-2].strval), (yyvsp[0].intval));
             }
         }
-#line 1288 "parser.tab.c"
+#line 1290 "parser.tab.c"
     break;
 
   case 17: /* multexp: multexp MUL value  */
-#line 160 "parser.y"
+#line 162 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n%s\n\tmul", (yyvsp[-2].code), (yyvsp[0].code));
         }
-#line 1296 "parser.tab.c"
+#line 1298 "parser.tab.c"
     break;
 
   case 18: /* multexp: multexp DIV value  */
-#line 165 "parser.y"
+#line 167 "parser.y"
         {
             asprintf(&(yyval.code), "%s\n%s\n\tdiv", (yyvsp[-2].code), (yyvsp[0].code));
         }
-#line 1304 "parser.tab.c"
+#line 1306 "parser.tab.c"
     break;
 
   case 19: /* multexp: value  */
-#line 170 "parser.y"
+#line 172 "parser.y"
         {
             (yyval.code) = (yyvsp[0].code);
         }
-#line 1312 "parser.tab.c"
+#line 1314 "parser.tab.c"
     break;
 
   case 20: /* value: NUM  */
-#line 177 "parser.y"
+#line 179 "parser.y"
         {
             asprintf(&(yyval.code), "\tmete %d", (yyvsp[0].intval));
         }
-#line 1320 "parser.tab.c"
+#line 1322 "parser.tab.c"
     break;
 
   case 21: /* value: ID  */
-#line 182 "parser.y"
+#line 184 "parser.y"
         {
             asprintf(&(yyval.code), "\tvalord %s", (yyvsp[0].strval));
         }
-#line 1328 "parser.tab.c"
+#line 1330 "parser.tab.c"
     break;
 
   case 22: /* value: LPAREN exp RPAREN  */
-#line 187 "parser.y"
+#line 189 "parser.y"
         {
             (yyval.code) = (yyvsp[-1].code);
         }
-#line 1336 "parser.tab.c"
+#line 1338 "parser.tab.c"
     break;
 
 
-#line 1340 "parser.tab.c"
+#line 1342 "parser.tab.c"
 
       default: break;
     }
@@ -1529,7 +1531,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 192 "parser.y"
+#line 194 "parser.y"
 
 
 void yyerror(const char *s)
@@ -1539,6 +1541,7 @@ void yyerror(const char *s)
 
 int main(int argc, char **argv)
 {
+    labelCount = 0; // Reiniciar labelCount
     if (argc > 1)
     {
         extern FILE *yyin;

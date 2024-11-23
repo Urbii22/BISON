@@ -7,6 +7,7 @@ int yylex();
 void yyerror(const char *s);
 
 int labelCount = 0;
+char *endLabel; // Variable global para la etiqueta final
 
 %}
 
@@ -49,6 +50,17 @@ stmts:
     ;
 
 stmt:
+    IF LPAREN exp RPAREN THEN stmts elserep
+        {
+            // Generar etiquetas en el orden deseado
+            asprintf(&endLabel, "LBL%d", labelCount++);
+            char *falseLabel;
+            asprintf(&falseLabel, "LBL%d", labelCount++);
+
+            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:",
+                $3, falseLabel, $6, endLabel, falseLabel, $7, endLabel);
+        }
+    |
     DO ID EQ exp COMMA NUM stmts END DO
         {
             char *startLabel;
@@ -63,7 +75,7 @@ stmt:
             char *incrementCode;
             asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete 1\n\tsum\n\tasigna", $2, $2);
 
-            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, $7, incrementCode, conditionCode);
+            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s", initCode, startLabel, $7, incrementCode, conditionCode);
         }
     |
     DO ID EQ exp COMMA NUM COMMA NUM stmts END DO
@@ -80,17 +92,7 @@ stmt:
             char *incrementCode;
             asprintf(&incrementCode, "\tvalori %s\n\tvalord %s\n\tmete %d\n\tsum\n\tasigna", $2, $2, $8);
 
-            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s\n", initCode, startLabel, $9, incrementCode, conditionCode);
-        }
-    |
-    IF LPAREN exp RPAREN THEN stmts elserep
-        {
-            char *falseLabel;
-            char *endLabel;
-            asprintf(&falseLabel, "LBL%d", labelCount++);
-            asprintf(&endLabel, "LBL%d", labelCount++);
-
-            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", $3, falseLabel, $6, endLabel, falseLabel, $7, endLabel);
+            asprintf(&$$, "%s\n%s:\n%s\n%s\n%s", initCode, startLabel, $9, incrementCode, conditionCode);
         }
     |
     PRINT MUL COMMA exp
@@ -118,11 +120,11 @@ elserep:
     ELSEIF LPAREN exp RPAREN THEN stmts elserep
         {
             char *falseLabel;
-            char *endLabel;
             asprintf(&falseLabel, "LBL%d", labelCount++);
-            asprintf(&endLabel, "LBL%d", labelCount++);
-
-            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s\n%s:\n", $3, falseLabel, $6, endLabel, falseLabel, $7, endLabel);
+            asprintf(&endLabel, "LBL%d", labelCount);
+            // Construir el código para el elseif
+            asprintf(&$$, "%s\n\tsifalsovea %s\n%s\n\tvea %s\n%s:\n%s",
+                $3, falseLabel, $6, endLabel, falseLabel, $7);
         }
     ;
 
@@ -198,6 +200,7 @@ void yyerror(const char *s)
 
 int main(int argc, char **argv)
 {
+    labelCount = 0; // Reiniciar labelCount
     if (argc > 1)
     {
         extern FILE *yyin;
