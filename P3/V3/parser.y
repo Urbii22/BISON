@@ -38,7 +38,7 @@ program:
     ;
 
 stmts:
-    stmts stmt
+    stmt stmts
         {
             asprintf(&$$, "%s\n%s", $1, $2);
         }
@@ -129,12 +129,12 @@ elserep:
     ;
 
 exp:
-    exp PLUS multexp
+    multexp PLUS exp
         {
             asprintf(&$$, "%s\n%s\n\tsum", $1, $3);
         }
     |
-    exp MINUS multexp
+    multexp MINUS exp
         {
             asprintf(&$$, "%s\n%s\n\tsub", $1, $3);
         }
@@ -158,12 +158,12 @@ exp:
     ;
 
 multexp:
-    multexp MUL value
+    value MUL multexp
         {
             asprintf(&$$, "%s\n%s\n\tmul", $1, $3);
         }
     |
-    multexp DIV value
+    value DIV multexp
         {
             asprintf(&$$, "%s\n%s\n\tdiv", $1, $3);
         }
