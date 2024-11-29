@@ -3,58 +3,58 @@
 #include <string.h>
 #define MAX_ID_LENGTH 31
 
-void lexerror(const char *s);  // Declare lexerror instead
+void lexerror(const char *s);  // Declarar lexerror
 %}
 
 %option noyywrap
 
 %%
 
-[ \t\r\n]+          ;  // Skip whitespace
+[ \t\r\n]+          ;  // Ignorar espacios en blanco
 
-"!"[^\n\r]*         ;  // Single-line comments starting with '!'
+"!"[^\n\r]*         ;  // Comentarios de una sola línea que comienzan con '!'
 
-"<!"(.|\n)*?"!>"    ;  // Multi-line comments between '<!' and '!>'
+"<!"(.|\n)*?"!>"    ;  // Comentarios de múltiples líneas entre '<!' y '!>'
 
-"program"           { return PROGRAM; }
-"end"               { return END; }
-"do"                { return DO; }
-"if"                { return IF; }
-"else"              { return ELSE; }
-"elseif"            { return ELSEIF; }
-"then"              { return THEN; }
-"endif"             { return ENDIF; }
-"print"             { return PRINT; }
+"program"           { return PROGRAM; }  // Palabra clave 'program'
+"end"               { return END; }      // Palabra clave 'end'
+"do"                { return DO; }       // Palabra clave 'do'
+"if"                { return IF; }       // Palabra clave 'if'
+"else"              { return ELSE; }     // Palabra clave 'else'
+"elseif"            { return ELSEIF; }   // Palabra clave 'elseif'
+"then"              { return THEN; }     // Palabra clave 'then'
+"endif"             { return ENDIF; }    // Palabra clave 'endif'
+"print"             { return PRINT; }    // Palabra clave 'print'
 
-"**"                { return POWER; }
-"*"                 { return MUL; }
-"+"                 { return PLUS; }
-"-"                 { return MINUS; }
-"/"                 { return DIV; }
-"="                 { return EQ; }
-","                 { return COMMA; }
-"("                 { return LPAREN; }
-")"                 { return RPAREN; }
+"**"                { return POWER; }    // Operador de potencia
+"*"                 { return MUL; }      // Operador de multiplicación
+"+"                 { return PLUS; }     // Operador de suma
+"-"                 { return MINUS; }    // Operador de resta
+"/"                 { return DIV; }      // Operador de división
+"="                 { return EQ; }       // Operador de igualdad
+","                 { return COMMA; }    // Coma
+"("                 { return LPAREN; }   // Paréntesis izquierdo
+")"                 { return RPAREN; }   // Paréntesis derecho
 
 [0-9]+              {
                             yylval.intval = atoi(yytext);
-                            return NUM;
+                            return NUM;  // Números enteros
                         }
 
 [a-zA-Z]([a-zA-Z0-9_])*   {
                                 if (strlen(yytext) > MAX_ID_LENGTH)
-                                    lexerror("Identifier too long");
+                                    lexerror("Identificador demasiado largo");
                                 else {
                                     yylval.strval = strdup(yytext);
-                                    return ID;
+                                    return ID;  // Identificadores
                                 }
                               }
 
-.                   { lexerror("Invalid character"); }
+.                   { lexerror("Carácter inválido"); }  // Carácter inválido
 
 %%
 
 void lexerror(const char *s)
 {
-    fprintf(stderr, "Lexer Error: %s at symbol '%s'\n", s, yytext);
+    fprintf(stderr, "Error del analizador léxico: %s en el símbolo '%s'\n", s, yytext);
 }
