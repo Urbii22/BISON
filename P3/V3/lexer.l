@@ -1,5 +1,5 @@
 %{
-#include "parser.tab.h"
+#include "y.tab.h"
 #include <string.h>
 #define MAX_ID_LENGTH 31
 
