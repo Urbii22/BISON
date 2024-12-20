@@ -1,0 +1,10 @@
+b := 1				>> asignación: b toma el valor 1
+DO                  >> inicio del bucle do-while
+	PRINT(b)		>> imprimir el valor de b
+	b := b + 1		>> incrementar b en uno, es decir b++
+	IF b - 5        >> comprobar si b es igual a 5
+	THEN PRINT 2 * b
+	ELSE PRINT (b/2)
+	FI
+WHILE b				>> mientras a sea distinto que 0 seguir el bucle
+PRINT b * b + 0 * 0 >> imprimir el resultado de (b*b) + (0*0)

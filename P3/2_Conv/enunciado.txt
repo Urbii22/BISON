@@ -1,0 +1,174 @@
+Enunciado de la tercera práctica para la segunda convocatoria de PL.
+
+Se trata de utilizar bison para obtener un compilador que traduzca un 
+lenguaje de alto nivel a código de la máquina de pila abstracta. 
+
+El lenguaje de alto nivel es muy sencillo. No tiene declaración de tipos.
+Y el único tipo que permite es el tipo entero. En las condiciones de las
+instrucciones if, do-while y for el valor 0 se interpreta como falso y
+cualquier otro valor como cierto.
+En el bucle for, la variable de la asignación inicial se incrementa de uno en
+uno en cada iteración del bucle.
+
+Los comentarios en el lenguaje serán en línea comenzando con ">>".
+
+Debe ser capaz de leer por entrada estándar (teclado) y por un fichero que se 
+le pase por argumento.
+
+El terminal 'NUM' representa un número entero positivo e 'ID' un 
+identificador/variable del lenguaje (pueden contener números, letras y guiones 
+bajos, pero no pueden comenzar por número).
+
+Debe ser capaz de leer por entrada estándar (teclado) y por un fichero
+que se le pase por argumento.
+
+
+La gramática del lenguaje es la siguiente:
+
+liststmt -> stmt 
+         |  stmt liststmt
+    stmt -> assig 
+         |  struc
+   assig -> ID ':=' arithexp
+   struc -> IF arithexp THEN liststmt (ELSE liststmt)? FI
+         |  DO liststmt WHILE arithexp
+         |  FOR assig TO NUM DO liststmt OD
+         |  PRINT arithexp
+arithexp -> arithexp '+' multexp
+         |  arithexp '-' multexp
+         |  multexp
+ multexp -> multexp '*' val
+         |  multexp '/' val
+         |  val
+     val -> '(' arithexp ')' | NUM | ID
+
+NOTA: Podría ser necesaria alguna transformación en la la gramática (eliminación
+      de recursividad, factorización...) antes de empezar a programar en Bison.
+
+
+Ante una entrada como:
+
+b := 1				>> asignación: b toma el valor 1
+DO                  >> inicio del bucle do-while
+	PRINT(b)		>> imprimir el valor de b
+	b := b + 1		>> incrementar b en uno, es decir b++
+	IF b - 5        >> comprobar si b es igual a 5
+	THEN PRINT 2 * b
+	ELSE PRINT (b/2)
+	FI
+WHILE b				>> mientras a sea distinto que 0 seguir el bucle
+PRINT b * b + 0 * 0 >> imprimir el resultado de (b*b) + (0*0)
+
+
+Debería generar la secuencia (salvo quizás el nombre concreto de las etiquetas):
+
+	valori b
+	mete 1
+	asigna
+LBL0
+	valord b
+	print
+	valori b
+	valord b
+	mete 1
+	sum
+	asigna
+	valord b
+	mete 5
+	sub
+	sifalsovea LBL2
+	mete 2
+	valord b
+	mul
+	print
+	vea LBL3
+LBL2
+	valord b
+	mete 2
+	div
+	print
+LBL3
+	valord b
+	sifalsovea LBL1
+	vea LBL0
+LBL1
+	valord b
+	valord b
+	mul
+	mete 0
+	mete 0
+	mul
+	sum
+	print
+
+
+
+Ante una entrada como:
+
+>> Inicio de programa
+FOR ext := 0 TO 10 DO
+    FOR int := 1 TO 50 DO
+        IF int - ext THEN
+            PRINT(ext+int)
+        FI
+    OD
+OD
+PRINT ext * 10 + int * 5 + ext * int * 0
+>> Fin de programa
+  
+
+Debería generar la secuencia (salvo quizás el nombre concreto de las etiquetas):
+
+	valori ext
+	mete 0
+	asigna
+LBL0
+	valord ext
+	mete 10
+	sub
+	sifalsovea LBL1
+	valori int
+	mete 1
+	asigna
+LBL2
+	valord int
+	mete 50
+	sub
+	sifalsovea LBL3
+	valord int
+	valord ext
+	sub
+	sifalsovea LBL4
+	valord ext
+	valord int
+	sum
+	print
+LBL4
+	valori int
+	valord int
+	mete 1
+	sum
+	asigna
+	vea LBL2
+LBL3
+	valori ext
+	valord ext
+	mete 1
+	sum
+	asigna
+	vea LBL0
+LBL1
+	valord ext
+	mete 10
+	mul
+	valord int
+	mete 5
+	mul
+	sum
+	valord ext
+	valord int
+	mul
+	mete 0
+	mul
+	sum
+	print
