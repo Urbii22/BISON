@@ -73,11 +73,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-int yylex(void);
-void yyerror(const char *s);
+int yylex(void);               // Declaración de la función de análisis léxico
+void yyerror(const char *s);   // Declaración de la función de manejo de errores
 
-int labelCount = 0;
-char *forVarName = NULL;
+int labelCount = 0;            // Contador para generar etiquetas únicas
+char *forVarName = NULL;       // Nombre de la variable utilizada en estructuras FOR
 
 #line 83 "parser.tab.c"
 
@@ -102,73 +102,7 @@ char *forVarName = NULL;
 #  endif
 # endif
 
-
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token kinds.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    NUM = 258,                     /* NUM  */
-    ID = 259,                      /* ID  */
-    IF = 260,                      /* IF  */
-    THEN = 261,                    /* THEN  */
-    ELSE = 262,                    /* ELSE  */
-    FI = 263,                      /* FI  */
-    DO = 264,                      /* DO  */
-    WHILE = 265,                   /* WHILE  */
-    FOR = 266,                     /* FOR  */
-    TO = 267,                      /* TO  */
-    PRINT = 268,                   /* PRINT  */
-    OD = 269,                      /* OD  */
-    ASSIGN = 270,                  /* ASSIGN  */
-    PLUS = 271,                    /* PLUS  */
-    MINUS = 272,                   /* MINUS  */
-    MUL = 273,                     /* MUL  */
-    DIV = 274,                     /* DIV  */
-    LPAREN = 275,                  /* LPAREN  */
-    RPAREN = 276                   /* RPAREN  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
-{
-#line 13 "parser.y"
-
-    int intval;
-    char *strval;
-    char *code;
-
-#line 157 "parser.tab.c"
-
-};
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
-
-
-extern YYSTYPE yylval;
-
-
-int yyparse (void);
-
-
-
+#include "parser.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -196,13 +130,15 @@ enum yysymbol_kind_t
   YYSYMBOL_LPAREN = 20,                    /* LPAREN  */
   YYSYMBOL_RPAREN = 21,                    /* RPAREN  */
   YYSYMBOL_YYACCEPT = 22,                  /* $accept  */
-  YYSYMBOL_liststmt = 23,                  /* liststmt  */
-  YYSYMBOL_stmt = 24,                      /* stmt  */
-  YYSYMBOL_assig = 25,                     /* assig  */
-  YYSYMBOL_struc = 26,                     /* struc  */
-  YYSYMBOL_arithexp = 27,                  /* arithexp  */
-  YYSYMBOL_multexp = 28,                   /* multexp  */
-  YYSYMBOL_val = 29                        /* val  */
+  YYSYMBOL_program = 23,                   /* program  */
+  YYSYMBOL_liststmt = 24,                  /* liststmt  */
+  YYSYMBOL_stmt = 25,                      /* stmt  */
+  YYSYMBOL_assig = 26,                     /* assig  */
+  YYSYMBOL_struc = 27,                     /* struc  */
+  YYSYMBOL_forsave = 28,                   /* forsave  */
+  YYSYMBOL_arithexp = 29,                  /* arithexp  */
+  YYSYMBOL_multexp = 30,                   /* multexp  */
+  YYSYMBOL_val = 31                        /* val  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -528,18 +464,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  20
+#define YYFINAL  21
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   42
+#define YYLAST   43
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  22
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  8
+#define YYNNTS  10
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  20
+#define YYNRULES  23
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  46
+#define YYNSTATES  48
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   276
@@ -590,9 +526,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    38,    38,    39,    49,    50,    57,    76,    86,   100,
-     120,   162,   176,   183,   190,   201,   208,   215,   224,   227,
-     230
+       0,    34,    34,    36,    44,    48,    56,    60,    68,    84,
+      95,   110,   125,   164,   176,   185,   193,   201,   209,   217,
+     225,   233,   237,   241
 };
 #endif
 
@@ -611,7 +547,8 @@ static const char *const yytname[] =
   "\"end of file\"", "error", "\"invalid token\"", "NUM", "ID", "IF",
   "THEN", "ELSE", "FI", "DO", "WHILE", "FOR", "TO", "PRINT", "OD",
   "ASSIGN", "PLUS", "MINUS", "MUL", "DIV", "LPAREN", "RPAREN", "$accept",
-  "liststmt", "stmt", "assig", "struc", "arithexp", "multexp", "val", YY_NULLPTR
+  "program", "liststmt", "stmt", "assig", "struc", "forsave", "arithexp",
+  "multexp", "val", YY_NULLPTR
 };
 
 static const char *
@@ -621,7 +558,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-11)
+#define YYPACT_NINF (-10)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -635,11 +572,11 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      11,   -10,    -1,    11,     4,    -1,    14,    11,   -11,   -11,
-      -1,   -11,   -11,    -1,     1,    -8,   -11,    20,    22,    12,
-     -11,   -11,    12,    10,    11,    -1,    -1,    -1,    -1,    -1,
-      32,   -11,     5,    -8,    -8,   -11,   -11,    12,    28,    11,
-     -11,    11,    15,    25,   -11,   -11
+       7,    -9,    -1,     7,   -10,    -1,    17,   -10,     7,   -10,
+     -10,    -1,   -10,   -10,    -1,    -2,     5,   -10,    15,    27,
+      11,   -10,   -10,    11,    -8,     7,    -1,    -1,    -1,    -1,
+      -1,     9,   -10,    22,     5,     5,   -10,   -10,    11,    31,
+       7,   -10,    26,    28,     7,   -10,    29,   -10
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -647,23 +584,23 @@ static const yytype_int8 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     0,     0,     0,     0,     2,     4,     5,
-       0,    19,    20,     0,     0,    14,    17,     0,     0,    11,
-       1,     3,     6,     0,     0,     0,     0,     0,     0,     0,
-       0,    18,     0,    12,    13,    15,    16,     9,     0,     0,
-       7,     0,     0,     0,     8,    10
+       2,     0,     0,     0,    14,     0,     0,     3,     4,     6,
+       7,     0,    22,    23,     0,     0,    17,    20,     0,     0,
+      13,     1,     5,     8,     0,     0,     0,     0,     0,     0,
+       0,     0,    21,     0,    15,    16,    18,    19,    11,     0,
+       0,     9,     0,     0,     0,    10,     0,    12
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -11,    -3,   -11,    38,   -11,    -4,     7,    13
+     -10,   -10,    -3,   -10,    21,   -10,   -10,    -4,     6,    10
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     6,     7,     8,     9,    14,    15,    16
+       0,     6,     7,     8,     9,    10,    19,    15,    16,    17
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -671,20 +608,20 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      17,    19,    11,    12,    21,    10,    22,    24,     1,    23,
-      27,    28,    39,    40,    20,     1,     2,    25,    26,    13,
-       3,    32,     4,    44,     5,    37,    25,    26,    25,    26,
-      29,    31,    33,    34,    30,    38,    42,    41,    43,    45,
-      35,    36,    18
+      18,    20,    12,    13,    25,    22,    11,    23,    26,    27,
+      24,     1,     2,    32,    26,    27,     3,    21,     4,    14,
+       5,    39,    33,    28,    29,    30,    38,    26,    27,    40,
+      41,     1,    34,    35,    42,    44,    45,    43,    36,    37,
+      31,    46,     0,    47
 };
 
 static const yytype_int8 yycheck[] =
 {
-       3,     5,     3,     4,     7,    15,    10,     6,     4,    13,
-      18,    19,     7,     8,     0,     4,     5,    16,    17,    20,
-       9,    24,    11,     8,    13,    29,    16,    17,    16,    17,
-      10,    21,    25,    26,    12,     3,    39,     9,    41,    14,
-      27,    28,     4
+       3,     5,     3,     4,     6,     8,    15,    11,    16,    17,
+      14,     4,     5,    21,    16,    17,     9,     0,    11,    20,
+      13,    12,    25,    18,    19,    10,    30,    16,    17,     7,
+       8,     4,    26,    27,     3,     9,     8,    40,    28,    29,
+      19,    44,    -1,    14
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -692,26 +629,26 @@ static const yytype_int8 yycheck[] =
 static const yytype_int8 yystos[] =
 {
        0,     4,     5,     9,    11,    13,    23,    24,    25,    26,
-      15,     3,     4,    20,    27,    28,    29,    23,    25,    27,
-       0,    23,    27,    27,     6,    16,    17,    18,    19,    10,
-      12,    21,    23,    28,    28,    29,    29,    27,     3,     7,
-       8,     9,    23,    23,     8,    14
+      27,    15,     3,     4,    20,    29,    30,    31,    24,    28,
+      29,     0,    24,    29,    29,     6,    16,    17,    18,    19,
+      10,    26,    21,    24,    30,    30,    31,    31,    29,    12,
+       7,     8,     3,    24,     9,     8,    24,    14
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    22,    23,    23,    24,    24,    25,    26,    26,    26,
-      26,    26,    27,    27,    27,    28,    28,    28,    29,    29,
-      29
+       0,    22,    23,    23,    24,    24,    25,    25,    26,    27,
+      27,    27,    27,    27,    28,    29,    29,    29,    30,    30,
+      30,    31,    31,    31
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     1,     3,     5,     7,     4,
-       7,     2,     3,     3,     1,     3,     3,     1,     3,     1,
-       1
+       0,     2,     0,     1,     1,     2,     1,     1,     3,     5,
+       7,     4,     8,     2,     0,     3,     3,     1,     3,     3,
+       1,     3,     1,     1
 };
 
 
@@ -1174,253 +1111,287 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* liststmt: stmt  */
-#line 38 "parser.y"
-         { (yyval.code) = (yyvsp[0].code); }
-#line 1181 "parser.tab.c"
+  case 3: /* program: liststmt  */
+#line 36 "parser.y"
+             { 
+      /* Al finalizar la lista de sentencias, se imprime el código generado */
+      printf("%s\n", (yyvsp[0].code)); 
+    }
+#line 1121 "parser.tab.c"
     break;
 
-  case 3: /* liststmt: stmt liststmt  */
-#line 39 "parser.y"
-                  {
-        asprintf(&(yyval.code), "%s\n%s", (yyvsp[-1].code), (yyvsp[0].code));
+  case 4: /* liststmt: stmt  */
+#line 44 "parser.y"
+         { 
+      /* Una única sentencia */
+      (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1130 "parser.tab.c"
+    break;
+
+  case 5: /* liststmt: stmt liststmt  */
+#line 48 "parser.y"
+                  { 
+      /* Concatenación de sentencias separadas por saltos de línea */
+      asprintf(&(yyval.code), "%s\n%s", (yyvsp[-1].code), (yyvsp[0].code)); 
+    }
+#line 1139 "parser.tab.c"
+    break;
+
+  case 6: /* stmt: assig  */
+#line 56 "parser.y"
+          { 
+      /* Sentencia de asignación */
+      (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1148 "parser.tab.c"
+    break;
+
+  case 7: /* stmt: struc  */
+#line 60 "parser.y"
+          { 
+      /* Sentencia de estructura de control */
+      (yyval.code) = (yyvsp[0].code); 
+    }
+#line 1157 "parser.tab.c"
+    break;
+
+  case 8: /* assig: ID ASSIGN arithexp  */
+#line 68 "parser.y"
+                       {
+        /* Genera código para asignar el resultado de una expresión aritmética a una variable */
+        asprintf(&(yyval.code),
+    "\tvalori %s\n"
+    "%s\n"
+    "\tasigna",
+    (yyvsp[-2].strval), (yyvsp[0].code));
+        /* Actualiza forVarName con el nombre de la variable asignada */
+        if (forVarName) free(forVarName);
+        forVarName = strdup((yyvsp[-2].strval));
+    }
+#line 1173 "parser.tab.c"
+    break;
+
+  case 9: /* struc: IF arithexp THEN liststmt FI  */
+#line 84 "parser.y"
+                                 {
+        /* Genera etiquetas para manejar el flujo del IF */
+        char *lblEnd;
+        asprintf(&lblEnd, "LBL%d", labelCount++);
+        asprintf(&(yyval.code),
+    "%s\n"
+    "\tsifalsovea %s\n"
+    "%s\n"
+    "%s:",
+    (yyvsp[-3].code), lblEnd, (yyvsp[-1].code), lblEnd);
     }
 #line 1189 "parser.tab.c"
     break;
 
-  case 4: /* stmt: assig  */
-#line 49 "parser.y"
-          { (yyval.code) = (yyvsp[0].code); }
-#line 1195 "parser.tab.c"
-    break;
-
-  case 5: /* stmt: struc  */
-#line 50 "parser.y"
-          { (yyval.code) = (yyvsp[0].code); }
-#line 1201 "parser.tab.c"
-    break;
-
-  case 6: /* assig: ID ASSIGN arithexp  */
-#line 57 "parser.y"
-                       {
-        asprintf(&(yyval.code),
-"\tvalori %s\n"
-"%s\n"
-"\tasigna",
-(yyvsp[-2].strval), (yyvsp[0].code));
-        if (forVarName) free(forVarName);
-        forVarName = strdup((yyvsp[-2].strval));
-    }
-#line 1215 "parser.tab.c"
-    break;
-
-  case 7: /* struc: IF arithexp THEN liststmt FI  */
-#line 76 "parser.y"
-                                 {
-        char *lblEnd;
-        asprintf(&lblEnd, "LBL%d", labelCount++);
-        asprintf(&(yyval.code),
-"%s\n"
-"\tsifalsovea %s\n"
-"%s\n"
-"%s:",
-(yyvsp[-3].code), lblEnd, (yyvsp[-1].code), lblEnd);
-    }
-#line 1230 "parser.tab.c"
-    break;
-
-  case 8: /* struc: IF arithexp THEN liststmt ELSE liststmt FI  */
-#line 86 "parser.y"
+  case 10: /* struc: IF arithexp THEN liststmt ELSE liststmt FI  */
+#line 95 "parser.y"
                                                {
+        /* Genera etiquetas para manejar el flujo del IF-ELSE */
         char *lblFalse, *lblEnd;
         asprintf(&lblFalse, "LBL%d", labelCount++);
         asprintf(&lblEnd,   "LBL%d", labelCount++);
         asprintf(&(yyval.code),
-"%s\n"
-"\tsifalsovea %s\n"
-"%s\n"
-"\tvea %s\n"
-"%s:\n"
-"%s\n"
-"%s:",
-(yyvsp[-5].code), lblFalse, (yyvsp[-3].code), lblEnd, lblFalse, (yyvsp[-1].code), lblEnd);
+    "%s\n"
+    "\tsifalsovea %s\n"
+    "%s\n"
+    "\tvea %s\n"
+    "%s:\n"
+    "%s\n"
+    "%s:",
+    (yyvsp[-5].code), lblFalse, (yyvsp[-3].code), lblEnd, lblFalse, (yyvsp[-1].code), lblEnd);
     }
-#line 1249 "parser.tab.c"
+#line 1209 "parser.tab.c"
     break;
 
-  case 9: /* struc: DO liststmt WHILE arithexp  */
-#line 100 "parser.y"
+  case 11: /* struc: DO liststmt WHILE arithexp  */
+#line 110 "parser.y"
                                {
-        char *lblStart, *lblEnd;
-        asprintf(&lblStart, "LBL%d", labelCount++);
-        asprintf(&lblEnd,   "LBL%d", labelCount++);
-        // DO-WHILE estructura:
-        // LBLstart:
-        //   ...liststmt...
-        //   ...arithexp...
-        //   sifalsovea LBLend
-        //   vea LBLstart
-        // LBLend:
-        asprintf(&(yyval.code),
-"%s:\n"
-"%s\n"
-"%s\n"
-"\tsifalsovea %s\n"
-"\tvea %s\n"
-"%s:",
-lblStart, (yyvsp[-2].code), (yyvsp[0].code), lblEnd, lblStart, lblEnd);
-    }
-#line 1274 "parser.tab.c"
-    break;
-
-  case 10: /* struc: FOR assig TO NUM DO liststmt OD  */
-#line 120 "parser.y"
-                                    {
-        // FOR var := init TO NUM DO ... OD
-        // [asig]
-        // LBLstart:
-        //   valord var
-        //   mete NUM
-        //   sub
-        //   sifalsovea LBLend
-        //   ...liststmt...
-        //   valori var
-        //   valord var
-        //   mete 1
-        //   sum
-        //   asigna
-        //   vea LBLstart
-        // LBLend:
+        /* Genera etiquetas para manejar el bucle DO-WHILE */
         char *lblStart, *lblEnd;
         asprintf(&lblStart, "LBL%d", labelCount++);
         asprintf(&lblEnd,   "LBL%d", labelCount++);
         asprintf(&(yyval.code),
-"%s\n"
-"%s:\n"
-"\tvalord %s\n"
-"\tmete %d\n"
-"\tsub\n"
-"\tsifalsovea %s\n"
-"%s\n"
-"\tvalori %s\n"
-"\tvalord %s\n"
-"\tmete 1\n"
-"\tsum\n"
-"\tasigna\n"
-"\tvea %s\n"
-"%s:",
-(yyvsp[-5].code),
-lblStart,
-forVarName, (yyvsp[-3].intval), lblEnd,
-(yyvsp[-1].code),
-forVarName, forVarName,
-lblStart,
-lblEnd);
+    "%s:\n"
+    "%s\n"
+    "%s\n"
+    "\tsifalsovea %s\n"
+    "\tvea %s\n"
+    "%s:",
+    lblStart, (yyvsp[-2].code), (yyvsp[0].code), lblEnd, lblStart, lblEnd);
     }
-#line 1321 "parser.tab.c"
+#line 1228 "parser.tab.c"
     break;
 
-  case 11: /* struc: PRINT arithexp  */
-#line 162 "parser.y"
+  case 12: /* struc: FOR forsave assig TO NUM DO liststmt OD  */
+#line 125 "parser.y"
+                                            {
+        /* Guarda la variable anterior antes de modificar forVarName */
+        char *oldVar = (yyvsp[-6].varsave); // Valor guardado por forsave
+        char *loopVar = strdup(forVarName);
+
+        /* Genera etiquetas para el inicio y fin del bucle FOR */
+        char *lblStart, *lblEnd;
+        asprintf(&lblStart, "LBL%d", labelCount++);
+        asprintf(&lblEnd,   "LBL%d", labelCount++);
+
+        /* Genera el código del bucle FOR */
+        asprintf(&(yyval.code),
+    "%s\n"
+    "%s:\n"
+    "\tvalord %s\n"
+    "\tmete %d\n"
+    "\tsub\n"
+    "\tsifalsovea %s\n"
+    "%s\n"
+    "\tvalori %s\n"
+    "\tvalord %s\n"
+    "\tmete 1\n"
+    "\tsum\n"
+    "\tasigna\n"
+    "\tvea %s\n"
+    "%s:",
+    (yyvsp[-5].code),           // Asignación inicial del FOR
+    lblStart,
+    loopVar, (yyvsp[-3].intval), lblEnd,
+    (yyvsp[-1].code),
+    loopVar, loopVar,
+    lblStart,
+    lblEnd);
+
+        /* Restaura la variable anterior del FOR externo */
+        if (forVarName) free(forVarName);
+        forVarName = oldVar;
+        free(loopVar);
+    }
+#line 1272 "parser.tab.c"
+    break;
+
+  case 13: /* struc: PRINT arithexp  */
+#line 164 "parser.y"
                    {
+        /* Genera código para imprimir el resultado de una expresión aritmética */
         asprintf(&(yyval.code),
-"%s\n"
-"\tprint",
-(yyvsp[0].code));
+    "%s\n"
+    "\tprint",
+    (yyvsp[0].code));
     }
-#line 1332 "parser.tab.c"
+#line 1284 "parser.tab.c"
     break;
 
-  case 12: /* arithexp: arithexp PLUS multexp  */
+  case 14: /* forsave: %empty  */
 #line 176 "parser.y"
+    {
+      char *oldVar = NULL;
+      if (forVarName) oldVar = strdup(forVarName);
+      (yyval.varsave) = oldVar;
+    }
+#line 1294 "parser.tab.c"
+    break;
+
+  case 15: /* arithexp: arithexp PLUS multexp  */
+#line 185 "parser.y"
                           {
+        /* Genera código para la suma de dos expresiones */
         asprintf(&(yyval.code),
-"%s\n"
-"%s\n"
-"\tsum",
-(yyvsp[-2].code), (yyvsp[0].code));
+    "%s\n"
+    "%s\n"
+    "\tsum",
+    (yyvsp[-2].code), (yyvsp[0].code));
     }
-#line 1344 "parser.tab.c"
+#line 1307 "parser.tab.c"
     break;
 
-  case 13: /* arithexp: arithexp MINUS multexp  */
-#line 183 "parser.y"
+  case 16: /* arithexp: arithexp MINUS multexp  */
+#line 193 "parser.y"
                            {
+        /* Genera código para la resta de dos expresiones */
         asprintf(&(yyval.code),
-"%s\n"
-"%s\n"
-"\tsub",
-(yyvsp[-2].code), (yyvsp[0].code));
+    "%s\n"
+    "%s\n"
+    "\tsub",
+    (yyvsp[-2].code), (yyvsp[0].code));
     }
-#line 1356 "parser.tab.c"
+#line 1320 "parser.tab.c"
     break;
 
-  case 14: /* arithexp: multexp  */
-#line 190 "parser.y"
+  case 17: /* arithexp: multexp  */
+#line 201 "parser.y"
             {
+        /* Propaga el valor de multexp */
+        (yyval.code) = (yyvsp[0].code);
+    }
+#line 1329 "parser.tab.c"
+    break;
+
+  case 18: /* multexp: multexp MUL val  */
+#line 209 "parser.y"
+                    {
+        /* Genera código para la multiplicación de dos valores */
+        asprintf(&(yyval.code),
+    "%s\n"
+    "%s\n"
+    "\tmul",
+    (yyvsp[-2].code), (yyvsp[0].code));
+    }
+#line 1342 "parser.tab.c"
+    break;
+
+  case 19: /* multexp: multexp DIV val  */
+#line 217 "parser.y"
+                    {
+        /* Genera código para la división de dos valores */
+        asprintf(&(yyval.code),
+    "%s\n"
+    "%s\n"
+    "\tdiv",
+    (yyvsp[-2].code), (yyvsp[0].code));
+    }
+#line 1355 "parser.tab.c"
+    break;
+
+  case 20: /* multexp: val  */
+#line 225 "parser.y"
+        {
+        /* Propaga el valor de val */
         (yyval.code) = (yyvsp[0].code);
     }
 #line 1364 "parser.tab.c"
     break;
 
-  case 15: /* multexp: multexp MUL val  */
-#line 201 "parser.y"
-                    {
-        asprintf(&(yyval.code),
-"%s\n"
-"%s\n"
-"\tmul",
-(yyvsp[-2].code), (yyvsp[0].code));
-    }
-#line 1376 "parser.tab.c"
-    break;
-
-  case 16: /* multexp: multexp DIV val  */
-#line 208 "parser.y"
-                    {
-        asprintf(&(yyval.code),
-"%s\n"
-"%s\n"
-"\tdiv",
-(yyvsp[-2].code), (yyvsp[0].code));
-    }
-#line 1388 "parser.tab.c"
-    break;
-
-  case 17: /* multexp: val  */
-#line 215 "parser.y"
-        {
-        (yyval.code) = (yyvsp[0].code);
-    }
-#line 1396 "parser.tab.c"
-    break;
-
-  case 18: /* val: LPAREN arithexp RPAREN  */
-#line 224 "parser.y"
+  case 21: /* val: LPAREN arithexp RPAREN  */
+#line 233 "parser.y"
                            {
+        /* Maneja expresiones entre paréntesis */
         (yyval.code) = (yyvsp[-1].code);
     }
-#line 1404 "parser.tab.c"
+#line 1373 "parser.tab.c"
     break;
 
-  case 19: /* val: NUM  */
-#line 227 "parser.y"
+  case 22: /* val: NUM  */
+#line 237 "parser.y"
         {
+        /* Genera código para un número entero */
         asprintf(&(yyval.code), "\tmete %d", (yyvsp[0].intval));
     }
-#line 1412 "parser.tab.c"
+#line 1382 "parser.tab.c"
     break;
 
-  case 20: /* val: ID  */
-#line 230 "parser.y"
+  case 23: /* val: ID  */
+#line 241 "parser.y"
        {
+        /* Genera código para acceder al valor de una variable */
         asprintf(&(yyval.code), "\tvalord %s", (yyvsp[0].strval));
     }
-#line 1420 "parser.tab.c"
+#line 1391 "parser.tab.c"
     break;
 
 
-#line 1424 "parser.tab.c"
+#line 1395 "parser.tab.c"
 
       default: break;
     }
@@ -1613,25 +1584,27 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 235 "parser.y"
+#line 247 "parser.y"
 
 
+/* Función para manejar errores sintácticos */
 void yyerror(const char *s)
 {
     fprintf(stderr, "Error sintáctico: %s\n", s);
 }
 
+/* Función principal */
 int main(int argc, char **argv)
 {
-    labelCount = 0;
+    labelCount = 0; // Inicializa el contador de etiquetas
     if (argc > 1) {
         extern FILE *yyin;
-        yyin = fopen(argv[1], "r");
+        yyin = fopen(argv[1], "r"); // Abre el archivo de entrada
         if (!yyin) {
             perror(argv[1]);
             return 1;
         }
     }
-    yyparse();
+    yyparse(); // Inicia el análisis sintáctico
     return 0;
 }
